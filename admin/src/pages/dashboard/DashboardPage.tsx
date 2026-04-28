@@ -30,7 +30,7 @@ export default function DashboardPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [killSwitchModal, setKillSwitchModal] = useState<string | null>(null);
   const { data: dashboardData, refetch: refetchDashboard } = useAsync<AdminDashboardResponse>(getAdminDashboard, null, []);
-  const { data: reportsData } = useAsync<AdminReportsResponse>(
+  const { data: reportsData } = useAsync<AdminReportsResponse | null>(
     async () => {
       try {
         const response = await getAdminReports({ from: '2024-01-01', to: '2024-01-31' });

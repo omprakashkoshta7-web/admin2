@@ -5,7 +5,7 @@ import {
   type AuthError,
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from '../config/firebase';
-import { request, setAuthToken, clearAuthToken } from '../api/apiClient';
+import { setAuthToken, clearAuthToken } from '../api/apiClient';
 
 export interface AdminUser {
   uid: string;

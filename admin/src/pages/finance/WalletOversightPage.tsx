@@ -44,7 +44,7 @@ export default function WalletOversightPage() {
           label="Total Orders"
           value={`${totalOrders.toLocaleString()}`}
           accent={ADMIN_COLORS.primary}
-          accentBg={ADMIN_COLORS.primaryBg}
+          accentBg="#f0f4ff"
           icon={Store}
           note="All orders"
         />

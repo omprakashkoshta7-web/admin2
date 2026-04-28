@@ -294,7 +294,7 @@ export default function VendorListPage() {
     
     // Pre-fill priority for existing vendor
     if (type === 'priority' && vendorId) {
-      const vendor = vendors.find(v => v.id === vendorId);
+      const vendor = vendors.find((v: any) => v.id === vendorId);
       if (vendor) {
         setPriorityLevel(vendor.priority || 1);
       }

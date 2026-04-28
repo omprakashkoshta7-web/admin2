@@ -1,6 +1,5 @@
-﻿import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { Truck, Plus, MapPin, X, CheckCircle, Edit, Trash2, Power, Eye, Image, DollarSign, TrendingUp, Activity, Search, Filter } from "lucide-react";
+﻿import { useState, useEffect } from "react";
+import { Truck, Plus, MapPin, X, CheckCircle, Edit, Trash2, Power, DollarSign, TrendingUp, Activity, Search, Filter } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { 
   getAdminDeliveryPartners, 
@@ -18,11 +17,8 @@ import { ADMIN_COLORS } from "../../utils/colors";
 import AdminMetricCard from "../../components/ui/AdminMetricCard";
 
 export default function DeliveryPage() {
-  const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", vehicleType: "bike", zoneAssignments: "" });
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
   const [items, setItems] = useState<any[]>([]);
   const [editing, setEditing] = useState(false);
@@ -53,30 +49,6 @@ export default function DeliveryPage() {
     logo: p.logo || p.logoUrl || '',
     raw: p,
   });
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Image size must be less than 5MB');
-        return;
-      }
-      if (!file.type.startsWith('image/')) {
-        alert('Please select a valid image file');
-        return;
-      }
-      setForm(prev => ({ ...prev, logo: file }));
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const onUploadImage = () => {
-    fileInputRef.current?.click();
-  };
 
   // Fetch delivery data from backend
   const { data: partnersData, refetch } = useAsync(() => getAdminDeliveryPartners(), {}, []);
@@ -148,7 +120,6 @@ export default function DeliveryPage() {
         setShowAdd(false);
         setAdded(false);
         setForm({ name: "", email: "", phone: "", vehicleType: "bike", zoneAssignments: "" });
-        setLogoPreview(null);
         setEditing(false);
         setCurrentId(null);
         setUploadingImage(false);
@@ -161,7 +132,6 @@ export default function DeliveryPage() {
 
   const onEdit = (p: any) => {
     setForm({ name: p.name || '', email: p.raw?.email || '', phone: p.raw?.phone || '', vehicleType: p.type || 'bike', zoneAssignments: p.cities || '' });
-    setLogoPreview(null);
     setEditing(true);
     setCurrentId(p.id);
     setShowAdd(true);
@@ -217,10 +187,9 @@ export default function DeliveryPage() {
   const handlePayoutUpdate = async () => {
     if (!selectedPartner) return;
     try {
-      const payoutRatePerKm = parseFloat(payoutForm.payoutRatePerKm) || undefined;
-      const payoutRatePerOrder = parseFloat(payoutForm.payoutRatePerOrder) || undefined;
+      const payoutRatePerKm = parseFloat(payoutForm.payoutRatePerKm) || 0;
       
-      await setDeliveryPayoutRate(selectedPartner.id, payoutRatePerKm, payoutRatePerOrder);
+      await setDeliveryPayoutRate(selectedPartner.id, payoutRatePerKm);
       setShowPayoutModal(false);
       setPayoutForm({ payoutRatePerKm: "", payoutRatePerOrder: "" });
       setSelectedPartner(null);
@@ -450,7 +419,6 @@ export default function DeliveryPage() {
                 setEditing(false); 
                 setCurrentId(null); 
                 setForm({ name: "", email: "", phone: "", vehicleType: "bike", zoneAssignments: "" }); 
-                setLogoPreview(null);
               }}>
                 <X size={18} className="text-gray-400" />
               </button>
@@ -530,7 +498,6 @@ export default function DeliveryPage() {
                       setShowAdd(false); 
                       setEditing(false); 
                       setCurrentId(null); 
-                      setLogoPreview(null); 
                     }} 
                     className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
                   >

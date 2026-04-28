@@ -2,7 +2,7 @@
 import { 
   Settings, ToggleLeft, ToggleRight, AlertTriangle, Zap,
   MapPin, RefreshCw, Shield, Activity, Power, Flag,
-  XCircle, CheckCircle, Clock, Globe
+  XCircle, Globe
 } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { getAdminControlState, updateAdminControl } from "../../api/admin";
@@ -40,13 +40,13 @@ export default function PlatformPage() {
 
   useEffect(() => {
     if (controlData) {
-      setOrderIntake(controlData.orderIntakeEnabled ?? true);
-      setVendorIntake(controlData.vendorIntakeEnabled ?? true);
-      setSystemKill(controlData.systemKillSwitchEnabled ?? false);
-      setCityPause(controlData.cityPause || {});
+      setOrderIntake((controlData as any).orderIntakeEnabled ?? true);
+      setVendorIntake((controlData as any).vendorIntakeEnabled ?? true);
+      setSystemKill((controlData as any).systemKillSwitchEnabled ?? false);
+      setCityPause((controlData as any).cityPause || {});
       
       // Transform featureFlags object to array format for display
-      const flagsArray = Object.entries(controlData.featureFlags || {}).map(([key, value]: [string, any]) => ({
+      const flagsArray = Object.entries((controlData as any).featureFlags || {}).map(([key, value]: [string, any]) => ({
         id: key,
         name: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
         desc: `${key} feature control`,

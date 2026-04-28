@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TrendingUp, Gift, AlertTriangle, Plus } from "lucide-react";
+import { TrendingUp, Gift, Plus } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { getCoupons, createCoupon } from "../../api/admin";
 

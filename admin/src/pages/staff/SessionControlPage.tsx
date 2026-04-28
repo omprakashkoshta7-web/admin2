@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { LogOut, Monitor, Clock, MapPin, Smartphone, X, AlertTriangle } from "lucide-react";
+import { LogOut, Monitor, Clock, MapPin, Smartphone, AlertTriangle } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import LoadingState from "../../components/ui/LoadingState";
 

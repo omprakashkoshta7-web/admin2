@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { 
-  Plus, X, CheckCircle, Search, Eye, Lock, Unlock, 
+  X, CheckCircle, Search, Eye, Lock, Unlock, 
   AlertTriangle, Users, Activity, Trash2, Edit, RefreshCw,
   Filter, ChevronDown, Download
 } from "lucide-react";
@@ -340,7 +340,7 @@ export default function StaffListPage() {
             Export
           </button>
           <button
-            onClick={() => refetchStaff()}
+            onClick={() => refetch()}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
           >
             <RefreshCw size={14} className={staffLoading ? "animate-spin" : ""} />

@@ -283,7 +283,7 @@ const LoginPage = () => {
       sessionId: `sess_${Date.now()}`,
       loginTime: now.toISOString(),
       lastActivity: now.toISOString(),
-      ipAddress: getClientIpAddress(),
+      ipAddress: 'Unknown',
       userAgent: navigator.userAgent
     };
     

@@ -45,7 +45,7 @@ export default function ReportsPage() {
   const [auditLimit, setAuditLimit] = useState(50);
   const [auditActionFilter, setAuditActionFilter] = useState("");
 
-  const { data: reportsData, loading: reportsLoading, refetch: refetchReports } = useAsync<AdminReportsResponse>(
+  const { data: reportsData, loading: reportsLoading } = useAsync<AdminReportsResponse>(
     () => getAdminReports({ from: appliedFrom || undefined, to: appliedTo || undefined }),
     null,
     [appliedFrom, appliedTo]

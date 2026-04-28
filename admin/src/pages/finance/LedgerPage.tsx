@@ -72,8 +72,8 @@ export default function LedgerPage() {
               className="appearance-none px-4 py-2.5 pr-8 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold"
             >
               <option value="all">All Actions</option>
-              {uniqueActions.map((action: string) => (
-                <option key={action} value={action}>{action}</option>
+              {uniqueActions.map((action: any) => (
+                <option key={String(action)} value={String(action)}>{String(action)}</option>
               ))}
             </select>
             <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />

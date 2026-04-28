@@ -671,7 +671,7 @@ export const assignTicket = async (ticketId: string, staffId: string) => {
   });
 };
 
-export const addTicketMessage = async (ticketId: string, content: string, isInternal: boolean = false) => {
+export const addTicketMessage = async (ticketId: string, content: string) => {
   return await request(`/admin/tickets/${ticketId}/messages`, {
     method: 'POST',
     body: JSON.stringify({ message: content }),
@@ -702,7 +702,7 @@ export const getTicketDetail = async (ticketId: string) => {
   return await request(`/admin/tickets/${ticketId}`);
 };
 
-export const escalateTicket = async (ticketId: string, reason: string, assignTo?: string) => {
+export const escalateTicket = async (ticketId: string, reason: string) => {
   return await request(`/admin/tickets/${ticketId}/escalate`, {
     method: 'PATCH',
     body: JSON.stringify({ message: reason }),
