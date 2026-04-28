@@ -307,6 +307,19 @@ button, input, select, textarea {
 /* Fix table cell alignment */
 .admin-main table td {
   vertical-align: middle;
+  text-align: left;
+}
+
+/* Fix table header alignment - all left aligned */
+.admin-main table th {
+  text-align: left !important;
+  vertical-align: middle;
+}
+
+/* Fix centered content in specific contexts */
+.admin-main table td.text-center,
+.admin-main table th.text-center {
+  text-align: center !important;
 }
 
 /* Fix header alignment */
@@ -356,21 +369,148 @@ button, input, select, textarea {
   text-align: left;
 }
 
-/* Fix table header text alignment */
-.admin-table th {
-  text-align: left;
-  vertical-align: middle;
+/* Fix quick stats alignment - centered */
+.admin-main .flex.items-center.gap-3 > div.text-center,
+.admin-main .flex.items-center.gap-4 > div.text-center {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fix empty state alignment */
+.admin-main .text-center.py-6,
+.admin-main .text-center.py-8,
+.admin-main .text-center.py-12,
+.admin-main .text-center.p-8,
+.admin-main .text-center.p-12,
+.admin-main .text-center.p-16 {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fix colSpan centered content */
+.admin-main table td[colspan] {
+  text-align: center;
+}
+
+/* Fix vendor stores column alignment */
+.admin-main table td[data-label="Stores"] > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 /* Fix responsive table alignment on mobile */
 @media (max-width: 1024px) {
   .admin-responsive-table tbody td {
     text-align: right;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
   
   .admin-responsive-table tbody td::before {
     text-align: left;
   }
+  
+  /* Fix centered content on mobile */
+  .admin-responsive-table tbody td.text-center {
+    justify-content: center;
+    text-align: center;
+  }
+  
+  /* Fix action buttons on mobile */
+  .admin-responsive-table tbody td[data-label="Actions"] {
+    justify-content: flex-end;
+  }
+  
+  /* Fix checkbox column on mobile */
+  .admin-responsive-table tbody td:first-child {
+    justify-content: center;
+  }
+}
+
+/* Fix grid layouts alignment */
+.admin-main .grid {
+  align-items: stretch;
+}
+
+/* Fix card content alignment */
+.admin-main .bg-white.rounded-2xl {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fix button groups alignment */
+.admin-main .flex.gap-2 button,
+.admin-main .flex.gap-3 button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fix icon alignment in buttons */
+.admin-main button svg {
+  flex-shrink: 0;
+}
+
+/* Fix badge alignment */
+.admin-main .rounded-full {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fix modal header alignment */
+.admin-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Fix form input alignment */
+.admin-main input,
+.admin-main select,
+.admin-main textarea {
+  text-align: left;
+}
+
+/* Fix placeholder alignment */
+.admin-main input::placeholder,
+.admin-main textarea::placeholder {
+  text-align: left;
+}
+
+/* Fix list alignment */
+.admin-main ul,
+.admin-main ol {
+  text-align: left;
+}
+
+/* Fix paragraph alignment in cards */
+.admin-main .bg-white p {
+  text-align: left;
+}
+
+/* Override for centered paragraphs */
+.admin-main .text-center p {
+  text-align: center;
+}
+
+/* Fix status badge alignment */
+.admin-main .px-2.py-1,
+.admin-main .px-3.py-1 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .admin-compact-metric-glow {
