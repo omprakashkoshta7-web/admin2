@@ -304,6 +304,75 @@ button, input, select, textarea {
   text-align: center;
 }
 
+/* Fix table cell alignment */
+.admin-main table td {
+  vertical-align: middle;
+}
+
+/* Fix header alignment */
+.admin-header-main {
+  align-items: center;
+}
+
+/* Fix button alignment in action columns */
+.admin-actions,
+.admin-main td .flex.items-center.gap-2 {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Fix modal content alignment */
+.admin-modal-content {
+  text-align: left;
+}
+
+/* Fix form label alignment */
+.admin-form-group label {
+  text-align: left;
+}
+
+/* Fix stats grid alignment */
+.admin-stats-grid > * {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+/* Fix metric card content alignment */
+.admin-stat-content {
+  width: 100%;
+  align-items: center;
+}
+
+/* Fix filter section alignment */
+.admin-filters-section {
+  align-items: center;
+}
+
+/* Fix search box alignment */
+.admin-search-box input {
+  text-align: left;
+}
+
+/* Fix table header text alignment */
+.admin-table th {
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* Fix responsive table alignment on mobile */
+@media (max-width: 1024px) {
+  .admin-responsive-table tbody td {
+    text-align: right;
+  }
+  
+  .admin-responsive-table tbody td::before {
+    text-align: left;
+  }
+}
+
 .admin-compact-metric-glow {
   position: absolute;
   inset: auto -1.8rem -1.6rem auto;
