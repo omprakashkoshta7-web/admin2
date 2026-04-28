@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, X, CheckCircle, Layers, ToggleLeft, ToggleRight, ChevronRight, Tag, Package } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Plus, Edit2, Trash2, X, CheckCircle, Layers, ToggleLeft, ToggleRight, ChevronRight, Tag, Package, Upload, Image as ImageIcon } from "lucide-react";
 import { ADMIN_COLORS } from "../../utils/colors";
 import { useAsync } from "../../hooks/useAsync";
 import { getProductCategories, createProductCategory, updateProductCategory, deleteProductCategory, getProducts } from "../../api/admin";
@@ -25,6 +25,11 @@ export default function CategoriesPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [productCounts, setProductCounts] = useState<Record<string, number>>({});
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [showCanvas, setShowCanvas] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Fetch categories from backend
   const { data: categoriesData, refetch: refetchCategories } = useAsync<AdminCategoriesResponse>(
@@ -77,11 +82,211 @@ export default function CategoriesPage() {
     }
   }, [productsData]);
 
-  const openAdd = () => { setForm(emptyForm); setEditId(null); setShowForm(true); setSaved(false); };
+  const openAdd = () => { 
+    setForm(emptyForm); 
+    setEditId(null); 
+    setShowForm(true); 
+    setSaved(false); 
+    setImagePreview(null);
+    setShowCanvas(false);
+  };
+  
   const openEdit = (c: any) => {
     setForm({ name: c.name, slug: c.slug, description: c.description, icon: c.icon, image: c.image || "", flowType: c.flowType });
-    setEditId(c._id || c.id); setShowForm(true); setSaved(false);
+    setEditId(c._id || c.id); 
+    setShowForm(true); 
+    setSaved(false);
+    setImagePreview(c.image || null);
+    setShowCanvas(false);
   };
+
+  // Handle image file upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size must be less than 5MB');
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Upload to server using FormData (multer)
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('folder', 'categories');
+
+      // Replace with your actual upload endpoint
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
+      const response = await fetch(`${API_BASE_URL}/upload/image`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const data = await response.json();
+      const imageUrl = data.url || data.imageUrl || data.data?.url;
+
+      if (imageUrl) {
+        setForm(prev => ({ ...prev, image: imageUrl }));
+        console.log('Image uploaded successfully:', imageUrl);
+      } else {
+        throw new Error('No image URL returned from server');
+      }
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      alert('Failed to upload image. Please try again.');
+      setImagePreview(null);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Handle canvas drawing
+  const openCanvasEditor = () => {
+    setShowCanvas(true);
+    setTimeout(() => {
+      if (canvasRef.current) {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          // Set canvas size
+          canvas.width = 400;
+          canvas.height = 400;
+          
+          // Fill with white background
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
+          // If there's an existing image, draw it
+          if (imagePreview) {
+            const img = new Image();
+            img.onload = () => {
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            };
+            img.src = imagePreview;
+          }
+        }
+      }
+    }, 100);
+  };
+
+  // Save canvas as image
+  const saveCanvasImage = async () => {
+    if (!canvasRef.current) return;
+
+    try {
+      setUploadingImage(true);
+      
+      // Convert canvas to blob
+      const blob = await new Promise<Blob>((resolve) => {
+        canvasRef.current!.toBlob((blob) => {
+          resolve(blob!);
+        }, 'image/png');
+      });
+
+      // Create FormData for multer upload
+      const formData = new FormData();
+      formData.append('image', blob, 'canvas-image.png');
+      formData.append('folder', 'categories');
+
+      // Upload to server
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
+      const response = await fetch(`${API_BASE_URL}/upload/image`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload canvas image');
+      }
+
+      const data = await response.json();
+      const imageUrl = data.url || data.imageUrl || data.data?.url;
+
+      if (imageUrl) {
+        setForm(prev => ({ ...prev, image: imageUrl }));
+        setImagePreview(imageUrl);
+        setShowCanvas(false);
+        console.log('Canvas image uploaded successfully:', imageUrl);
+      } else {
+        throw new Error('No image URL returned from server');
+      }
+    } catch (error) {
+      console.error('Canvas upload failed:', error);
+      alert('Failed to upload canvas image. Please try again.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Canvas drawing functionality
+  useEffect(() => {
+    if (!showCanvas || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    const startDrawing = (e: MouseEvent) => {
+      isDrawing = true;
+      [lastX, lastY] = [e.offsetX, e.offsetY];
+    };
+
+    const draw = (e: MouseEvent) => {
+      if (!isDrawing) return;
+      
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      
+      [lastX, lastY] = [e.offsetX, e.offsetY];
+    };
+
+    const stopDrawing = () => {
+      isDrawing = false;
+    };
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    return () => {
+      canvas.removeEventListener('mousedown', startDrawing);
+      canvas.removeEventListener('mousemove', draw);
+      canvas.removeEventListener('mouseup', stopDrawing);
+      canvas.removeEventListener('mouseout', stopDrawing);
+    };
+  }, [showCanvas]);
 
   const save = async () => {
     if (!form.name) {
@@ -324,7 +529,6 @@ export default function CategoriesPage() {
                   { label: "Slug (URL)", key: "slug", placeholder: "e.g. document-printing (auto-generated if empty)", type: "text" },
                   { label: "Description", key: "description", placeholder: "Short description of the category", type: "text" },
                   { label: "Icon (emoji)", key: "icon", placeholder: "e.g. 📄", type: "text" },
-                  { label: "Image URL", key: "image", placeholder: "https://example.com/image.jpg", type: "text" },
                 ].map(f => (
                   <div key={f.key}>
                     <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">{f.label}</label>
@@ -336,6 +540,77 @@ export default function CategoriesPage() {
                       className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-gray-900 transition" />
                   </div>
                 ))}
+                
+                {/* Image Upload Section */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Category Image</label>
+                  
+                  {/* Image Preview */}
+                  {imagePreview && (
+                    <div className="mb-3 relative">
+                      <img 
+                        src={imagePreview} 
+                        alt="Preview" 
+                        className="w-full h-48 object-cover rounded-xl border border-gray-200"
+                      />
+                      <button
+                        onClick={() => {
+                          setImagePreview(null);
+                          setForm(prev => ({ ...prev, image: '' }));
+                        }}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Upload Buttons */}
+                  <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingImage}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+                    >
+                      <Upload size={14} />
+                      {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={openCanvasEditor}
+                      disabled={uploadingImage}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+                    >
+                      <ImageIcon size={14} />
+                      Draw Image
+                    </button>
+                  </div>
+                  
+                  {/* Or manual URL input */}
+                  <div className="mt-2">
+                    <input 
+                      type="text"
+                      placeholder="Or paste image URL"
+                      value={form.image}
+                      onChange={e => {
+                        setForm(p => ({ ...p, image: e.target.value }));
+                        if (e.target.value) {
+                          setImagePreview(e.target.value);
+                        }
+                      }}
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-gray-900 transition" 
+                    />
+                  </div>
+                </div>
+                
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Flow Type</label>
                   <select 
@@ -352,7 +627,7 @@ export default function CategoriesPage() {
                     className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">
                     Cancel
                   </button>
-                  <button onClick={save} disabled={!form.name}
+                  <button onClick={save} disabled={!form.name || uploadingImage}
                     className="flex-1 py-2.5 text-white text-sm font-bold rounded-xl disabled:opacity-40 transition hover:opacity-90"
                     style={{ backgroundColor: ADMIN_COLORS.primary }}>
                     {editId ? "Update Category" : "Create Category"}
@@ -360,6 +635,74 @@ export default function CategoriesPage() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Canvas Editor Modal */}
+      {showCanvas && (
+        <div className="admin-modal-overlay">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-2xl border border-gray-100">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" 
+                  style={{ backgroundColor: ADMIN_COLORS.accentLight + "20" }}>
+                  <ImageIcon size={14} style={{ color: ADMIN_COLORS.accent }} />
+                </div>
+                <h2 className="font-bold text-gray-900">Draw Category Image</h2>
+              </div>
+              <button onClick={() => setShowCanvas(false)} 
+                className="p-1.5 rounded-lg hover:bg-gray-100 transition">
+                <X size={18} className="text-gray-400" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {/* Canvas */}
+              <div className="flex justify-center">
+                <canvas
+                  ref={canvasRef}
+                  className="border-2 border-gray-300 rounded-xl cursor-crosshair"
+                  style={{ maxWidth: '100%', height: 'auto' }}
+                />
+              </div>
+              
+              {/* Canvas Controls */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    if (canvasRef.current) {
+                      const ctx = canvasRef.current.getContext('2d');
+                      if (ctx) {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+                      }
+                    }
+                  }}
+                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+                >
+                  Clear Canvas
+                </button>
+                <button
+                  onClick={() => setShowCanvas(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveCanvasImage}
+                  disabled={uploadingImage}
+                  className="flex-1 py-2.5 text-white text-sm font-bold rounded-xl disabled:opacity-40 transition hover:opacity-90"
+                  style={{ backgroundColor: ADMIN_COLORS.primary }}
+                >
+                  {uploadingImage ? 'Uploading...' : 'Save & Upload'}
+                </button>
+              </div>
+              
+              <p className="text-xs text-gray-500 text-center">
+                Draw on the canvas above. Click and drag to draw. The image will be uploaded to the server when you save.
+              </p>
+            </div>
           </div>
         </div>
       )}
