@@ -131,10 +131,16 @@ export default function CategoriesPage() {
       formData.append('image', file);
       formData.append('folder', 'categories');
 
-      // Replace with your actual upload endpoint
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
+      // Get auth token
+      const token = localStorage.getItem('adminToken');
+      
+      // Upload via gateway to product service
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
       const response = await fetch(`${API_BASE_URL}/upload/image`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
         body: formData,
       });
 
@@ -143,11 +149,18 @@ export default function CategoriesPage() {
       }
 
       const data = await response.json();
-      const imageUrl = data.url || data.imageUrl || data.data?.url;
+      
+      // Backend returns { success: true, data: { url, filename, ... }, message: "..." }
+      const imageUrl = data.data?.url || data.url;
 
       if (imageUrl) {
-        setForm(prev => ({ ...prev, image: imageUrl }));
-        console.log('Image uploaded successfully:', imageUrl);
+        // Construct full URL if it's a relative path
+        const fullImageUrl = imageUrl.startsWith('http') 
+          ? imageUrl 
+          : `${import.meta.env.VITE_PRODUCT_SERVICE_URL || 'http://localhost:4003'}${imageUrl}`;
+        
+        setForm(prev => ({ ...prev, image: fullImageUrl }));
+        console.log('Image uploaded successfully:', fullImageUrl);
       } else {
         throw new Error('No image URL returned from server');
       }
@@ -160,82 +173,18 @@ export default function CategoriesPage() {
     }
   };
 
-  // Handle canvas drawing
+  // Open canvas editor
   const openCanvasEditor = () => {
     setShowCanvas(true);
-    setTimeout(() => {
-      if (canvasRef.current) {
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          // Set canvas size
-          canvas.width = 400;
-          canvas.height = 400;
-          
-          // Fill with white background
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          
-          // If there's an existing image, draw it
-          if (imagePreview) {
-            const img = new Image();
-            img.onload = () => {
-              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            };
-            img.src = imagePreview;
-          }
-        }
-      }
-    }, 100);
   };
 
-  // Save canvas as image
-  const saveCanvasImage = async () => {
+  // Save canvas as base64 — no backend needed
+  const saveCanvasImage = () => {
     if (!canvasRef.current) return;
-
-    try {
-      setUploadingImage(true);
-      
-      // Convert canvas to blob
-      const blob = await new Promise<Blob>((resolve) => {
-        canvasRef.current!.toBlob((blob) => {
-          resolve(blob!);
-        }, 'image/png');
-      });
-
-      // Create FormData for multer upload
-      const formData = new FormData();
-      formData.append('image', blob, 'canvas-image.png');
-      formData.append('folder', 'categories');
-
-      // Upload to server
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
-      const response = await fetch(`${API_BASE_URL}/upload/image`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload canvas image');
-      }
-
-      const data = await response.json();
-      const imageUrl = data.url || data.imageUrl || data.data?.url;
-
-      if (imageUrl) {
-        setForm(prev => ({ ...prev, image: imageUrl }));
-        setImagePreview(imageUrl);
-        setShowCanvas(false);
-        console.log('Canvas image uploaded successfully:', imageUrl);
-      } else {
-        throw new Error('No image URL returned from server');
-      }
-    } catch (error) {
-      console.error('Canvas upload failed:', error);
-      alert('Failed to upload canvas image. Please try again.');
-    } finally {
-      setUploadingImage(false);
-    }
+    const dataUrl = canvasRef.current.toDataURL('image/png');
+    setForm(prev => ({ ...prev, image: dataUrl }));
+    setImagePreview(dataUrl);
+    setShowCanvas(false);
   };
 
   // Canvas drawing functionality
@@ -245,6 +194,19 @@ export default function CategoriesPage() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // Initialize canvas with white background
+    canvas.width = 500;
+    canvas.height = 400;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Restore existing image if any
+    if (imagePreview) {
+      const img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      img.src = imagePreview;
+    }
 
     let isDrawing = false;
     let lastX = 0;
@@ -257,9 +219,13 @@ export default function CategoriesPage() {
 
     const draw = (e: MouseEvent) => {
       if (!isDrawing) return;
-      
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 2;
+
+      const isEraser = (canvas as any)._eraser === true;
+      const color = (canvas as any)._brushColor || '#000000';
+      const size = (canvas as any)._brushSize || 4;
+
+      ctx.strokeStyle = isEraser ? '#ffffff' : color;
+      ctx.lineWidth = isEraser ? size * 3 : size;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       
@@ -659,49 +625,100 @@ export default function CategoriesPage() {
             
             <div className="space-y-4">
               {/* Canvas */}
-              <div className="flex justify-center">
+              <div className="flex justify-center bg-gray-50 rounded-xl p-2">
                 <canvas
                   ref={canvasRef}
                   className="border-2 border-gray-300 rounded-xl cursor-crosshair"
                   style={{ maxWidth: '100%', height: 'auto' }}
                 />
               </div>
-              
-              {/* Canvas Controls */}
-              <div className="flex gap-3">
+
+              {/* Canvas Toolbar */}
+              <div className="flex items-center gap-3 flex-wrap bg-gray-50 rounded-xl p-3">
+                {/* Brush color */}
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-semibold text-gray-600">Color</label>
+                  <input
+                    type="color"
+                    defaultValue="#000000"
+                    className="w-8 h-8 rounded cursor-pointer border border-gray-200"
+                    onChange={(e) => {
+                      if (canvasRef.current) (canvasRef.current as any)._brushColor = e.target.value;
+                    }}
+                  />
+                </div>
+
+                {/* Brush size */}
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-semibold text-gray-600">Size</label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="30"
+                    defaultValue="4"
+                    className="w-24"
+                    onChange={(e) => {
+                      if (canvasRef.current) (canvasRef.current as any)._brushSize = Number(e.target.value);
+                    }}
+                  />
+                </div>
+
+                {/* Eraser toggle */}
                 <button
+                  type="button"
+                  onClick={(e) => {
+                    if (!canvasRef.current) return;
+                    const canvas = canvasRef.current as any;
+                    canvas._eraser = !canvas._eraser;
+                    const btn = e.currentTarget;
+                    btn.textContent = canvas._eraser ? '✏️ Draw' : '🧹 Eraser';
+                    btn.classList.toggle('bg-yellow-100', canvas._eraser);
+                    btn.classList.toggle('border-yellow-300', canvas._eraser);
+                  }}
+                  className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition"
+                >
+                  🧹 Eraser
+                </button>
+
+                {/* Clear */}
+                <button
+                  type="button"
                   onClick={() => {
-                    if (canvasRef.current) {
-                      const ctx = canvasRef.current.getContext('2d');
-                      if (ctx) {
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-                      }
+                    if (!canvasRef.current) return;
+                    const ctx = canvasRef.current.getContext('2d');
+                    if (ctx) {
+                      ctx.fillStyle = '#ffffff';
+                      ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
                     }
                   }}
-                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+                  className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition"
                 >
-                  Clear Canvas
+                  🗑️ Clear
                 </button>
+              </div>
+
+              <p className="text-xs text-gray-400 text-center">
+                Click and drag to draw. No backend upload needed — image saves directly.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={() => setShowCanvas(false)}
                   className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
                 >
                   Cancel
                 </button>
                 <button
+                  type="button"
                   onClick={saveCanvasImage}
-                  disabled={uploadingImage}
-                  className="flex-1 py-2.5 text-white text-sm font-bold rounded-xl disabled:opacity-40 transition hover:opacity-90"
+                  className="flex-1 py-2.5 text-white text-sm font-bold rounded-xl transition hover:opacity-90"
                   style={{ backgroundColor: ADMIN_COLORS.primary }}
                 >
-                  {uploadingImage ? 'Uploading...' : 'Save & Upload'}
+                  Use This Image
                 </button>
               </div>
-              
-              <p className="text-xs text-gray-500 text-center">
-                Draw on the canvas above. Click and drag to draw. The image will be uploaded to the server when you save.
-              </p>
             </div>
           </div>
         </div>

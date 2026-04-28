@@ -187,12 +187,12 @@ export default function AdminLayout() {
             </div>
           </nav>
 
-          <div className="px-4 pb-5">
+          <div className="px-4 pb-6">
             <button
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white/72 hover:bg-white/5 hover:text-white transition-all"
+              className="flex w-full items-center justify-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-white bg-red-500 hover:bg-red-600 active:bg-red-700 transition-all shadow-lg"
             >
-              <LogOut size={15} />
+              <LogOut size={16} />
               Logout
             </button>
           </div>
