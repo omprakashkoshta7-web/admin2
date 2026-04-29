@@ -5,7 +5,7 @@ import {
   XCircle, RefreshCw, Download,
   RotateCcw, DollarSign, MapPin,
   Zap, ChevronDown, Package,
-  Clock, Filter
+  Clock
 } from "lucide-react";
 import { ADMIN_COLORS, getStatusColor, getSLARiskColor } from "../../utils/colors";
 import { useAsync } from "../../hooks/useAsync";
@@ -466,64 +466,58 @@ const OrderListPage = () => {
         </div>
       )}
 
-      {/* Enhanced Filters and Search */}
+      {/* Filters and Search */}
       <div className="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
           {/* Search */}
-          <div className="relative flex-1 min-w-0">
+          <div className="relative flex-1 min-w-[200px]">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search orders, customers, vendors..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm"
             />
           </div>
 
-          {/* Advanced Filters */}
-          <div className="flex items-center gap-2">
-            <Filter size={16} className="text-gray-400" />
-            
-            {/* Status Filter */}
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="appearance-none px-4 py-2.5 pr-8 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold"
-              >
-                <option value="all">All Status</option>
-                <option value="Pending Assignment">Pending Assignment</option>
-                <option value="Confirmed">Confirmed</option>
-                <option value="Assigned to Vendor">Assigned to Vendor</option>
-                <option value="Vendor Accepted">Vendor Accepted</option>
-                <option value="In Production">In Production</option>
-                <option value="QC Review">QC Review</option>
-                <option value="Ready for Pickup">Ready for Pickup</option>
-                <option value="Out for Delivery">Out for Delivery</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Cancelled">Cancelled</option>
-                <option value="Refunded">Refunded</option>
-              </select>
-              <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            </div>
-
-            {/* Risk Filter */}
-            <div className="relative">
-              <select
-                value={riskFilter}
-                onChange={(e) => setRiskFilter(e.target.value)}
-                className="appearance-none px-4 py-2.5 pr-8 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold"
-              >
-                <option value="all">All Risk Levels</option>
-                <option value="critical">Critical</option>
-                <option value="warning">Warning</option>
-                <option value="normal">Normal</option>
-              </select>
-              <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            </div>
+          {/* Status Filter */}
+          <div className="relative">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="appearance-none pl-3 pr-8 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold bg-white"
+            >
+              <option value="all">All Status</option>
+              <option value="Pending Assignment">Pending Assignment</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Assigned to Vendor">Assigned to Vendor</option>
+              <option value="Vendor Accepted">Vendor Accepted</option>
+              <option value="In Production">In Production</option>
+              <option value="QC Review">QC Review</option>
+              <option value="Ready for Pickup">Ready for Pickup</option>
+              <option value="Out for Delivery">Out for Delivery</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Cancelled">Cancelled</option>
+              <option value="Refunded">Refunded</option>
+            </select>
+            <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
 
+          {/* Risk Filter */}
+          <div className="relative">
+            <select
+              value={riskFilter}
+              onChange={(e) => setRiskFilter(e.target.value)}
+              className="appearance-none pl-3 pr-8 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold bg-white"
+            >
+              <option value="all">All Risk Levels</option>
+              <option value="critical">Critical</option>
+              <option value="warning">Warning</option>
+              <option value="normal">Normal</option>
+            </select>
+            <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          </div>
         </div>
       </div>
 
