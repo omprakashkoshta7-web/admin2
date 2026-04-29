@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { 
   X, CheckCircle, Search, Eye, Lock, Unlock, 
   AlertTriangle, Users, Activity, Trash2, Edit, RefreshCw,
-  Filter, ChevronDown, Download
+  ChevronDown, Download
 } from "lucide-react";
 import { ADMIN_COLORS, getRoleColor } from "../../utils/colors";
 import { useAsync } from "../../hooks/useAsync";

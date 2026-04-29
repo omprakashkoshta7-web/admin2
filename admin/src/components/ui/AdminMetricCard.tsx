@@ -26,6 +26,8 @@ export default function AdminMetricCard({
   onClick,
 }: AdminMetricCardProps) {
   const isPrimary = index === 0;
+  const isTextValue = isNaN(Number(value)) && value.length > 3; // "Active", "Paused" etc.
+  const valueFontSize = isTextValue ? "text-2xl" : "text-4xl";
 
   if (isPrimary) {
     return (
@@ -44,7 +46,7 @@ export default function AdminMetricCard({
               <p className="text-sm font-semibold text-white/90">{label}</p>
             </div>
           </div>
-          <p className="text-4xl font-black text-white leading-none">{value}</p>
+          <p className={`${valueFontSize} font-black text-white leading-none`}>{value}</p>
           {note && <p className="text-xs font-medium text-white/60 mt-3">{note}</p>}
           {children}
         </div>
@@ -65,7 +67,7 @@ export default function AdminMetricCard({
             <p className="text-sm font-semibold text-gray-600">{label}</p>
           </div>
         </div>
-        <p className="text-4xl font-black text-gray-900 leading-none">{value}</p>
+        <p className={`${valueFontSize} font-black text-gray-900 leading-none`}>{value}</p>
         {note && <p className="text-xs font-medium text-gray-500 mt-3">{note}</p>}
         {children}
       </div>

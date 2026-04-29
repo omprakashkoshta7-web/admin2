@@ -69,7 +69,6 @@ const CustomerListPage = () => {
   const [loading, setLoading] = useState(false);
   const [actionError, setActionError] = useState("");
   const [customerDetails, setCustomerDetails] = useState<any>(null);
-  const [bulkAction, setBulkAction] = useState("");
 
   // Fetch real customer data from backend
   const { data: customersData, loading: customersLoading, refetch: refetchCustomers } = useAsync(
@@ -225,30 +224,6 @@ const CustomerListPage = () => {
     } catch (error: any) {
       console.error('Failed to update customer status:', error);
       setActionError(error?.message || 'Failed to update customer status');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleBulkAction = async () => {
-    if (!bulkAction || selectedCustomers.length === 0) return;
-    
-    if (!confirm(`Are you sure you want to ${bulkAction} ${selectedCustomers.length} customers?`)) return;
-    
-    try {
-      setLoading(true);
-      for (const customerId of selectedCustomers) {
-        if (bulkAction === 'restrict') {
-          await restrictAdminCustomer(customerId, false, 'Bulk restriction');
-        }
-        // Add other bulk actions as needed
-      }
-      refetchCustomers();
-      setSelectedCustomers([]);
-      setBulkAction("");
-    } catch (error) {
-      console.error('Bulk action failed:', error);
-      alert('Some operations failed. Please check and try again.');
     } finally {
       setLoading(false);
     }
