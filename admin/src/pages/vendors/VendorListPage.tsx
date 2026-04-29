@@ -10,6 +10,7 @@ import {
 import { ADMIN_COLORS, getStatusColor } from "../../utils/colors";
 import LoadingState from "../../components/ui/LoadingState";
 import AdminMetricCard from "../../components/ui/AdminMetricCard";
+import AnimatedCount from "../../components/ui/AnimatedCount";
 import { useAsync } from "../../hooks/useAsync";
 import { 
   getAdminVendors, 
@@ -491,7 +492,7 @@ export default function VendorListPage() {
             <AlertTriangle size={20} style={{ color: ADMIN_COLORS.critical }} />
             <div className="flex-1">
               <p className="font-bold" style={{ color: ADMIN_COLORS.critical }}>
-                {criticalHealthVendors.length} Vendor{criticalHealthVendors.length > 1 ? 's' : ''} Need Attention
+                <AnimatedCount value={criticalHealthVendors.length} /> Vendor{criticalHealthVendors.length > 1 ? 's' : ''} Need Attention
               </p>
               <p className="text-sm mt-1" style={{ color: ADMIN_COLORS.critical }}>
                 Vendors with health score below 70% requiring immediate review

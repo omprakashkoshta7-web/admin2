@@ -288,7 +288,7 @@ const CustomerListPage = () => {
               </p>
             </div>
             <button
-              onClick={() => setRiskFilter("high")}
+              onClick={() => { setRiskFilter("high"); setTimeout(() => window.scrollTo({ top: 500, behavior: 'smooth' }), 50); }}
               className="px-4 py-2 rounded-xl font-bold text-white transition"
               style={{ backgroundColor: ADMIN_COLORS.critical }}
             >
