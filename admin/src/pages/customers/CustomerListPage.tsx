@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  Search, Eye, Users, Filter,
+  Search, Eye, Users,
   RefreshCw, MapPin,
   AlertTriangle, CheckCircle, Ban,
   DollarSign, ArrowUp, ArrowDown,
@@ -322,65 +322,42 @@ const CustomerListPage = () => {
         </div>
       )}
 
-      {/* Enhanced Header and Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          {/* Stats Summary */}
-          <div className="grid grid-cols-4 gap-4">
-            <AdminMetricCard 
-              index={0}
-              label="Total Customers" 
-              value={customers.length.toString()} 
-              accent={ADMIN_COLORS.primary} 
-              icon={Users} 
-            />
-            <AdminMetricCard 
-              label="Active" 
-              value={activeCustomers.length.toString()} 
-              accent={ADMIN_COLORS.success} 
-              accentBg={ADMIN_COLORS.successBg}
-              icon={CheckCircle} 
-            />
-            <AdminMetricCard 
-              label="High Risk" 
-              value={highRiskCustomers.length.toString()} 
-              accent={ADMIN_COLORS.critical} 
-              accentBg={ADMIN_COLORS.criticalBg}
-              icon={AlertTriangle} 
-            />
-            <AdminMetricCard 
-              label="Restricted" 
-              value={restrictedCustomers.length.toString()} 
-              accent={ADMIN_COLORS.warning} 
-              accentBg={ADMIN_COLORS.warningBg}
-              icon={Ban} 
-            />
-          </div>
+      {/* Stats Cards + Export/Refresh in same row */}
+      <div className="flex items-center gap-3">
+        {/* 4 Cards — full width */}
+        <div className="grid grid-cols-4 gap-4 flex-1">
+          <AdminMetricCard 
+            index={0}
+            label="Total Customers" 
+            value={customers.length.toString()} 
+            accent={ADMIN_COLORS.primary} 
+            icon={Users} 
+          />
+          <AdminMetricCard 
+            label="Active" 
+            value={activeCustomers.length.toString()} 
+            accent={ADMIN_COLORS.success} 
+            accentBg={ADMIN_COLORS.successBg}
+            icon={CheckCircle} 
+          />
+          <AdminMetricCard 
+            label="High Risk" 
+            value={highRiskCustomers.length.toString()} 
+            accent={ADMIN_COLORS.critical} 
+            accentBg={ADMIN_COLORS.criticalBg}
+            icon={AlertTriangle} 
+          />
+          <AdminMetricCard 
+            label="Restricted" 
+            value={restrictedCustomers.length.toString()} 
+            accent={ADMIN_COLORS.warning} 
+            accentBg={ADMIN_COLORS.warningBg}
+            icon={Ban} 
+          />
         </div>
-        
-        <div className="flex items-center gap-3">
-          {/* Bulk Actions */}
-          {selectedCustomers.length > 0 && (
-            <div className="flex items-center gap-2">
-              <select
-                value={bulkAction}
-                onChange={(e) => setBulkAction(e.target.value)}
-                className="px-3 py-2 rounded-lg border border-gray-200 text-sm"
-              >
-                <option value="">Bulk Actions</option>
-                <option value="restrict">Restrict Selected</option>
-                <option value="export">Export Selected</option>
-              </select>
-              <button
-                onClick={handleBulkAction}
-                disabled={!bulkAction || loading}
-                className="px-3 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg disabled:opacity-50"
-              >
-                Apply ({selectedCustomers.length})
-              </button>
-            </div>
-          )}
-          
+
+        {/* Export + Refresh — aligned to cards row */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={exportCustomers}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
@@ -398,86 +375,76 @@ const CustomerListPage = () => {
         </div>
       </div>
 
-      {/* Enhanced Filters and Search */}
+      {/* Filters and Search — single clean row */}
       <div className="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
           {/* Search */}
-          <div className="relative flex-1 min-w-0">
+          <div className="relative flex-1 min-w-[200px]">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search customers by name, email, phone, or ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm"
             />
           </div>
 
-          {/* Advanced Filters */}
-          <div className="flex items-center gap-2">
-            <Filter size={16} className="text-gray-400" />
-            
-            {/* Status Filter */}
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="appearance-none px-4 py-2.5 pr-8 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="restricted">Restricted</option>
-                <option value="inactive">Inactive</option>
-                <option value="new">New</option>
-              </select>
-              <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            </div>
-
-            {/* Risk Filter */}
-            <div className="relative">
-              <select
-                value={riskFilter}
-                onChange={(e) => setRiskFilter(e.target.value)}
-                className="appearance-none px-4 py-2.5 pr-8 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold"
-              >
-                <option value="all">All Risk Levels</option>
-                <option value="low">Low Risk (80+)</option>
-                <option value="medium">Medium Risk (50-79)</option>
-                <option value="high">High Risk (&lt;50)</option>
-              </select>
-              <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            </div>
-
-            {/* Sort Options */}
-            <div className="relative">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="appearance-none px-4 py-2.5 pr-8 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold"
-              >
-                <option value="lifetimeValue">Lifetime Value</option>
-                <option value="riskScore">Risk Score</option>
-                <option value="totalOrders">Total Orders</option>
-                <option value="name">Name</option>
-                <option value="lastActive">Last Active</option>
-              </select>
-              <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            </div>
-
-            <button
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="p-2.5 rounded-xl border border-gray-200 hover:border-gray-900 transition"
+          {/* Status Filter */}
+          <div className="relative">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="appearance-none pl-3 pr-8 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold bg-white"
             >
-              {sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
-            </button>
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="restricted">Restricted</option>
+              <option value="inactive">Inactive</option>
+              <option value="new">New</option>
+            </select>
+            <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
 
-          {/* Quick Stats */}
-          <div className="flex items-center gap-3 sm:gap-4 justify-between sm:ml-auto">
-            <div className="text-center">
-              <p className="text-xs text-gray-500">Active</p>
-              <p className="text-lg font-black" style={{ color: ADMIN_COLORS.success }}>
-                {activeCustomers.length}
+          {/* Risk Filter */}
+          <div className="relative">
+            <select
+              value={riskFilter}
+              onChange={(e) => setRiskFilter(e.target.value)}
+              className="appearance-none pl-3 pr-8 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold bg-white"
+            >
+              <option value="all">All Risk Levels</option>
+              <option value="low">Low Risk (80+)</option>
+              <option value="medium">Medium Risk (50-79)</option>
+              <option value="high">High Risk (&lt;50)</option>
+            </select>
+            <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Sort */}
+          <div className="relative">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="appearance-none pl-3 pr-8 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold bg-white"
+            >
+              <option value="lifetimeValue">Lifetime Value</option>
+              <option value="riskScore">Risk Score</option>
+              <option value="totalOrders">Total Orders</option>
+              <option value="name">Name</option>
+              <option value="lastActive">Last Active</option>
+            </select>
+            <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          </div>
+
+          <button
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="p-2.5 rounded-xl border border-gray-200 hover:border-gray-900 transition"
+          >
+            {sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+          </button>
+        </div>
+      </div>
               </p>
             </div>
             <div className="text-center">
