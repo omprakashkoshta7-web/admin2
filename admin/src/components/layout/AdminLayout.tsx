@@ -224,7 +224,7 @@ export default function AdminLayout() {
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 <div className="relative">
                   <button 
-                    className="relative hidden md:flex h-9 w-9 items-center justify-center rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden"
+                    className="relative hidden md:flex h-9 w-9 items-center justify-center rounded-xl shadow-lg hover:shadow-xl transition-all overflow-visible"
                     style={{ 
                       background: 'radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 24%), linear-gradient(180deg, #1a2332 0%, #141c28 100%)'
                     }}
@@ -232,8 +232,8 @@ export default function AdminLayout() {
                   >
                     <Bell size={16} className="text-white" />
                     {unreadCount > 0 && (
-                      <span className="absolute right-1 top-1 min-w-[18px] rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-[18px] text-white border border-white text-center">
-                        {Math.min(unreadCount, 99)}
+                      <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-[18px] text-white border-2 border-white text-center flex items-center justify-center">
+                        {unreadCount > 99 ? "99+" : unreadCount}
                       </span>
                     )}
                   </button>
@@ -241,53 +241,94 @@ export default function AdminLayout() {
                   {showNotifications && (
                     <div className="absolute right-0 top-full mt-2 w-80 rounded-2xl bg-white shadow-xl border border-slate-200 z-50">
                       <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                        <h3 className="font-bold text-sm text-slate-900">Notifications</h3>
-                        <button 
-                          onClick={() => setShowNotifications(false)}
-                          className="p-1 hover:bg-slate-100 rounded-lg transition"
-                        >
-                          <X size={16} className="text-slate-500" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-sm text-slate-900">Notifications</h3>
+                          {unreadCount > 0 && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-600">
+                              {unreadCount} unread
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {unreadCount > 0 && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await notificationService.markAllRead();
+                                  setUnreadCount(0);
+                                  setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+                                } catch { /* silent */ }
+                              }}
+                              className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 px-2 py-1 rounded-lg hover:bg-indigo-50 transition"
+                            >
+                              Mark all read
+                            </button>
+                          )}
+                          <button 
+                            onClick={() => setShowNotifications(false)}
+                            className="p-1 hover:bg-slate-100 rounded-lg transition"
+                          >
+                            <X size={16} className="text-slate-500" />
+                          </button>
+                        </div>
                       </div>
                       {notifications.length ? (
                         <div className="max-h-96 overflow-y-auto p-2">
                           {notifications.map((notification) => (
-                            <button
-                              key={notification._id}
-                              onClick={() => {
-                                setShowNotifications(false);
-                                // Navigate based on category
-                                const categoryRoutes: Record<string, string> = {
-                                  order: '/orders',
-                                  orders: '/orders',
-                                  payment: '/finance',
-                                  finance: '/finance',
-                                  refund: '/refunds',
-                                  vendor: '/vendors',
-                                  customer: '/customers',
-                                  support: '/support',
-                                  delivery: '/delivery',
-                                  sla: '/sla',
-                                };
-                                const route = categoryRoutes[notification.category?.toLowerCase()] || '/dashboard';
-                                navigate(route);
-                              }}
-                              className="w-full text-left rounded-xl px-3 py-3 hover:bg-slate-50 active:bg-slate-100 transition cursor-pointer group"
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-sm font-semibold text-slate-900 group-hover:text-indigo-700 transition">{notification.title}</p>
-                                  <p className="mt-1 text-xs leading-5 text-slate-600">{notification.message}</p>
-                                  <p className="mt-2 text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                                    {notification.category} • {formatTimestamp(notification.createdAt)}
-                                  </p>
+                            <div key={notification._id} className="relative rounded-xl hover:bg-slate-50 transition group">
+                              <button
+                                onClick={() => {
+                                  setShowNotifications(false);
+                                  // Mark as read
+                                  if (!notification.isRead) {
+                                    void notificationService.markAsRead(notification._id).catch(() => {});
+                                    setNotifications(prev => prev.map(n => n._id === notification._id ? { ...n, isRead: true } : n));
+                                    setUnreadCount(prev => Math.max(0, prev - 1));
+                                  }
+                                  const categoryRoutes: Record<string, string> = {
+                                    order: '/orders', orders: '/orders',
+                                    payment: '/finance', finance: '/finance',
+                                    refund: '/refunds', vendor: '/vendors',
+                                    customer: '/customers', support: '/support',
+                                    delivery: '/delivery', sla: '/sla',
+                                  };
+                                  const route = categoryRoutes[notification.category?.toLowerCase()] || '/dashboard';
+                                  navigate(route);
+                                }}
+                                className="w-full text-left px-3 py-3 cursor-pointer"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="min-w-0 flex-1">
+                                    <p className={`text-sm font-semibold transition ${notification.isRead ? 'text-slate-500' : 'text-slate-900 group-hover:text-indigo-700'}`}>
+                                      {notification.title}
+                                    </p>
+                                    <p className="mt-1 text-xs leading-5 text-slate-500">{notification.message}</p>
+                                    <p className="mt-1.5 text-[11px] uppercase tracking-[0.18em] text-slate-400">
+                                      {notification.category} • {formatTimestamp(notification.createdAt)}
+                                    </p>
+                                  </div>
+                                  <div className="flex flex-col items-center gap-1 mt-0.5 flex-shrink-0">
+                                    {!notification.isRead && <span className="h-2 w-2 rounded-full bg-rose-500" />}
+                                    <span className="text-slate-300 group-hover:text-indigo-400 transition text-xs">→</span>
+                                  </div>
                                 </div>
-                                <div className="flex flex-col items-center gap-1.5 mt-0.5">
-                                  {!notification.isRead && <span className="h-2.5 w-2.5 rounded-full bg-rose-500 flex-shrink-0" />}
-                                  <span className="text-slate-300 group-hover:text-indigo-400 transition text-xs">→</span>
-                                </div>
-                              </div>
-                            </button>
+                              </button>
+                              {/* Per-notification mark as read */}
+                              {!notification.isRead && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    void notificationService.markAsRead(notification._id).catch(() => {});
+                                    setNotifications(prev => prev.map(n => n._id === notification._id ? { ...n, isRead: true } : n));
+                                    setUnreadCount(prev => Math.max(0, prev - 1));
+                                  }}
+                                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-[10px] font-semibold text-slate-400 hover:text-indigo-600 px-1.5 py-0.5 rounded hover:bg-indigo-50 transition"
+                                  title="Mark as read"
+                                >
+                                  ✓ read
+                                </button>
+                              )}
+                            </div>
                           ))}
                         </div>
                       ) : (

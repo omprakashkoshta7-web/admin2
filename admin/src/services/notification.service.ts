@@ -20,9 +20,15 @@ export const notificationService = {
   getSummary() {
     return request<NotificationSummary>("/notifications/summary");
   },
-  getRecent(limit = 8) {
+  getRecent(limit = 20) {
     return request<{ notifications: PortalNotification[]; meta?: unknown }>(
       `/notifications?limit=${limit}`
     );
+  },
+  markAsRead(id: string) {
+    return request(`/notifications/${id}/read`, { method: "PATCH" });
+  },
+  markAllRead() {
+    return request("/notifications/read-all", { method: "PATCH" });
   },
 };
