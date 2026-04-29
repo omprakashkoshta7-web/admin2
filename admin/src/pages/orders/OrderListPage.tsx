@@ -154,11 +154,14 @@ const normalizeVendor = (raw: any) => ({
   score: raw?.healthScore ?? raw?.priority ?? 0,
 });
 
+const ROWS_PER_PAGE = 15;
+
 const OrderListPage = () => {
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [statusFilter, setStatusFilter] = useState("all");
   const [riskFilter, setRiskFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [actionModal, setActionModal] = useState<{
     type: 'reassign' | 'cancel' | 'refund' | 'view' | null;
@@ -217,6 +220,18 @@ const OrderListPage = () => {
     
     return matchesSearch && matchesStatus && matchesRisk;
   });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredOrders.length / ROWS_PER_PAGE);
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * ROWS_PER_PAGE,
+    currentPage * ROWS_PER_PAGE
+  );
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, riskFilter]);
 
   // Auto-refresh orders every 30 seconds
   useEffect(() => {
@@ -532,12 +547,11 @@ const OrderListPage = () => {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <div className="overflow-y-auto max-h-[55vh]">
-            <table className="w-full min-w-[900px]">
-              <thead className="sticky top-0 z-10 bg-gray-50">
-                <tr className="border-b border-gray-100">
+          <table className="w-full min-w-[900px]">
+            <thead className="bg-gray-50 border-b border-gray-100">
+              <tr>
                 <th className="text-left p-4">
                   <input
                     type="checkbox"
@@ -556,7 +570,7 @@ const OrderListPage = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredOrders.map((order: any) => {
+              {paginatedOrders.map((order: any) => {
                 const statusColors = getStatusColor(order.status);
                 const riskColors = getSLARiskColor(order.risk);
                 
@@ -680,8 +694,56 @@ const OrderListPage = () => {
               })}
             </tbody>
           </table>
-          </div>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-white">
+            <p className="text-xs text-gray-500">
+              Showing {(currentPage - 1) * ROWS_PER_PAGE + 1}–{Math.min(currentPage * ROWS_PER_PAGE, filteredOrders.length)} of {filteredOrders.length} orders
+            </p>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition"
+              >
+                ← Prev
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                .reduce<(number | string)[]>((acc, p, idx, arr) => {
+                  if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) acc.push('...');
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  p === '...' ? (
+                    <span key={`ellipsis-${idx}`} className="px-2 text-xs text-gray-400">…</span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p as number)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
+                        currentPage === p
+                          ? 'border-gray-900 bg-gray-900 text-white'
+                          : 'border-gray-200 hover:bg-gray-50 text-gray-700'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  )
+                )}
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition"
+              >
+                Next →
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Action Modals */}
