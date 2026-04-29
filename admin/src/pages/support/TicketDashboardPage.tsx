@@ -73,7 +73,6 @@ const TicketDashboardPage = () => {
 
   const stats = (statsData as any) || {};
   const byStatus = stats.byStatus || {};
-  const byPriority = stats.byPriority || {};
   const resolution = stats.resolution || {};
 
   const openCount = byStatus.open || 0;
