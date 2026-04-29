@@ -425,91 +425,133 @@ const TicketDashboardPage = () => {
             </div>
           ) : agents.length > 0 ? (
             <>
-              {/* Top performers row */}
+              {/* Top 3 performers */}
               <div className="grid grid-cols-3 gap-4">
-                {agents.slice(0, 3).map((agent: any, i: number) => (
-                  <div key={agent.agentId} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                        style={{ backgroundColor: i === 0 ? "#F59E0B" : i === 1 ? "#9CA3AF" : "#CD7F32" }}
-                      >
-                        {i + 1}
+                {agents.slice(0, 3).map((agent: any, i: number) => {
+                  const medalColor = i === 0 ? "#F59E0B" : i === 1 ? "#9CA3AF" : "#CD7F32";
+                  const medalLabel = i === 0 ? "🥇 Top Agent" : i === 1 ? "🥈 2nd Place" : "🥉 3rd Place";
+                  const agentName = agent.agentName || agent.name || agent.email || agent.agentId;
+                  const shortId = String(agent.agentId).slice(-6);
+                  return (
+                    <div key={agent.agentId} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                      {/* Medal badge */}
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: medalColor + "20", color: medalColor }}>
+                          {medalLabel}
+                        </span>
+                        {i === 0 && <Award size={18} style={{ color: medalColor }} />}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-gray-900 truncate">{agent.agentId}</p>
-                        <p className="text-xs text-gray-500">{agent.totalAssigned} assigned</p>
+
+                      {/* Agent info */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm flex-shrink-0"
+                          style={{ backgroundColor: medalColor }}>
+                          {agentName.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-gray-900 truncate">{agentName}</p>
+                          <p className="text-xs text-gray-400 font-mono">#{shortId}</p>
+                        </div>
                       </div>
-                      {i === 0 && <Award size={16} style={{ color: "#F59E0B" }} />}
+
+                      {/* Stats grid */}
+                      <div className="grid grid-cols-3 gap-2 mb-4">
+                        {[
+                          { label: "Assigned", value: agent.totalAssigned, color: "#6b7280" },
+                          { label: "Resolved", value: agent.resolved, color: ADMIN_COLORS.success },
+                          { label: "Open", value: agent.open, color: ADMIN_COLORS.warning },
+                        ].map(s => (
+                          <div key={s.label} className="text-center p-2 rounded-xl bg-gray-50">
+                            <p className="text-base font-black" style={{ color: s.color }}>{s.value}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Resolution rate bar */}
+                      <div>
+                        <div className="flex justify-between text-xs mb-1.5">
+                          <span className="text-gray-500 font-semibold">Resolution Rate</span>
+                          <span className="font-black" style={{ color: agent.resolutionRate >= 70 ? ADMIN_COLORS.success : agent.resolutionRate >= 40 ? ADMIN_COLORS.warning : ADMIN_COLORS.error }}>
+                            {agent.resolutionRate}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full h-2">
+                          <div className="h-2 rounded-full transition-all"
+                            style={{
+                              width: `${agent.resolutionRate}%`,
+                              backgroundColor: agent.resolutionRate >= 70 ? ADMIN_COLORS.success : agent.resolutionRate >= 40 ? ADMIN_COLORS.warning : ADMIN_COLORS.error
+                            }}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Resolution Rate</span>
-                        <span className="font-bold" style={{ color: ADMIN_COLORS.success }}>{agent.resolutionRate}%</span>
-                      </div>
-                      <div className="w-full bg-gray-100 rounded-full h-2">
-                        <div
-                          className="h-2 rounded-full transition-all"
-                          style={{ width: `${agent.resolutionRate}%`, backgroundColor: ADMIN_COLORS.success }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
-              {/* Full table */}
+              {/* All agents table */}
               <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-                <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
-                  <TrendingUp size={16} className="text-gray-500" />
+                <div className="px-5 py-3.5 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
+                  <TrendingUp size={15} className="text-gray-500" />
                   <span className="text-sm font-bold text-gray-700">All Agents</span>
+                  <span className="ml-auto text-xs text-gray-400">{agents.length} agents</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-gray-100">
-                        {["Agent ID", "Total Assigned", "Resolved", "Closed", "Open", "In Progress", "Resolution Rate"].map((h) => (
-                          <th key={h} className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">{h}</th>
+                      <tr className="border-b border-gray-100 bg-gray-50">
+                        {["Name", "Total Assigned", "Resolved", "Closed", "Open", "In Progress", "Resolution Rate"].map((h) => (
+                          <th key={h} className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide px-4 py-3">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {agents.map((agent: any) => (
-                        <tr key={agent.agentId} className="border-b border-gray-50 hover:bg-gray-50 transition">
-                          <td className="p-4">
-                            <p className="text-sm font-semibold text-gray-900 font-mono">{agent.agentId}</p>
-                          </td>
-                          <td className="p-4">
-                            <span className="text-sm font-bold text-gray-900">{agent.totalAssigned}</span>
-                          </td>
-                          <td className="p-4">
-                            <span className="text-sm font-semibold" style={{ color: ADMIN_COLORS.success }}>{agent.resolved}</span>
-                          </td>
-                          <td className="p-4">
-                            <span className="text-sm font-semibold text-gray-600">{agent.closed}</span>
-                          </td>
-                          <td className="p-4">
-                            <span className="text-sm font-semibold" style={{ color: ADMIN_COLORS.warning }}>{agent.open}</span>
-                          </td>
-                          <td className="p-4">
-                            <span className="text-sm font-semibold" style={{ color: ADMIN_COLORS.info }}>{agent.inProgress}</span>
-                          </td>
-                          <td className="p-4">
-                            <div className="flex items-center gap-3">
-                              <div className="flex-1 bg-gray-100 rounded-full h-2 min-w-[80px]">
-                                <div
-                                  className="h-2 rounded-full"
-                                  style={{
-                                    width: `${agent.resolutionRate}%`,
-                                    backgroundColor: agent.resolutionRate >= 70 ? ADMIN_COLORS.success : agent.resolutionRate >= 40 ? ADMIN_COLORS.warning : ADMIN_COLORS.error
-                                  }}
-                                />
+                      {agents.map((agent: any, idx: number) => {
+                        const agentName = agent.agentName || agent.name || agent.email || agent.agentId;
+                        const shortId = String(agent.agentId).slice(-6);
+                        const rate = agent.resolutionRate;
+                        const rateColor = rate >= 70 ? ADMIN_COLORS.success : rate >= 40 ? ADMIN_COLORS.warning : ADMIN_COLORS.error;
+                        return (
+                          <tr key={agent.agentId} className="border-b border-gray-50 hover:bg-gray-50 transition">
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                                  style={{ backgroundColor: idx === 0 ? "#F59E0B" : idx === 1 ? "#9CA3AF" : idx === 2 ? "#CD7F32" : ADMIN_COLORS.primary }}>
+                                  {agentName.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-900">{agentName}</p>
+                                  <p className="text-xs text-gray-400 font-mono">#{shortId}</p>
+                                </div>
                               </div>
-                              <span className="text-sm font-bold text-gray-900 w-10 text-right">{agent.resolutionRate}%</span>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="text-sm font-bold text-gray-900">{agent.totalAssigned}</span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="text-sm font-semibold" style={{ color: ADMIN_COLORS.success }}>{agent.resolved}</span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="text-sm font-semibold text-gray-600">{agent.closed}</span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="text-sm font-semibold" style={{ color: ADMIN_COLORS.warning }}>{agent.open}</span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="text-sm font-semibold" style={{ color: ADMIN_COLORS.info }}>{agent.inProgress}</span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-3">
+                                <div className="flex-1 bg-gray-100 rounded-full h-2 min-w-[80px]">
+                                  <div className="h-2 rounded-full" style={{ width: `${rate}%`, backgroundColor: rateColor }} />
+                                </div>
+                                <span className="text-sm font-bold w-10 text-right" style={{ color: rateColor }}>{rate}%</span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

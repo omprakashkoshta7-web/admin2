@@ -385,7 +385,7 @@ export default function ReportsPage() {
             <table className="w-full min-w-[700px]">
               <thead>
                 <tr style={{ borderBottom: "1px solid #f1f5f9" }}>
-                  {["Timestamp", "Action", "Actor", "Target", "Details"].map((h) => (
+                  {["Timestamp", "Action", "Name", "Target", "Details"].map((h) => (
                     <th key={h} className="text-left text-xs font-bold text-gray-400 uppercase tracking-wide px-4 py-2.5">{h}</th>
                   ))}
                 </tr>
