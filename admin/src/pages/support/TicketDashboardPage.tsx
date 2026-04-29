@@ -79,8 +79,12 @@ const TicketDashboardPage = () => {
   const openCount = byStatus.open || 0;
   const inProgressCount = byStatus.in_progress || 0;
   const resolvedCount = (byStatus.resolved || 0) + (byStatus.closed || 0);
-  const urgentCount = byPriority.urgent || 0;
   const avgHours = resolution.avgHours || 0;
+
+  // Real-time urgent count: only tickets that are urgent AND not resolved/closed
+  const urgentCount = tickets.filter(
+    (t: any) => t.priority === "urgent" && t.status !== "resolved" && t.status !== "closed"
+  ).length;
 
   const filteredTickets = tickets.filter((t: any) => {
     const matchSearch =
@@ -441,8 +445,8 @@ const TicketDashboardPage = () => {
                 {agents.slice(0, 3).map((agent: any, i: number) => {
                   const medalColor = i === 0 ? "#F59E0B" : i === 1 ? "#9CA3AF" : "#CD7F32";
                   const medalLabel = i === 0 ? "🥇 Top Agent" : i === 1 ? "🥈 2nd Place" : "🥉 3rd Place";
-                  const agentName = agent.agentName || agent.name || agent.email || agent.agentId;
-                  const shortId = String(agent.agentId).slice(-6);
+                  const agentName = agent.agentName || agent.name || agent.email || String(agent.agentId || "?");
+                  const shortId = String(agent.agentId || "").slice(-6);
                   return (
                     <div key={agent.agentId} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
                       {/* Medal badge */}
@@ -457,7 +461,7 @@ const TicketDashboardPage = () => {
                       <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm flex-shrink-0"
                           style={{ backgroundColor: medalColor }}>
-                          {agentName.charAt(0).toUpperCase()}
+                          {(agentName || "?").charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-bold text-gray-900 truncate">{agentName}</p>
@@ -519,8 +523,8 @@ const TicketDashboardPage = () => {
                     </thead>
                     <tbody>
                       {agents.map((agent: any, idx: number) => {
-                        const agentName = agent.agentName || agent.name || agent.email || agent.agentId;
-                        const shortId = String(agent.agentId).slice(-6);
+                        const agentName = agent.agentName || agent.name || agent.email || String(agent.agentId || "?");
+                        const shortId = String(agent.agentId || "").slice(-6);
                         const rate = agent.resolutionRate;
                         const rateColor = rate >= 70 ? ADMIN_COLORS.success : rate >= 40 ? ADMIN_COLORS.warning : ADMIN_COLORS.error;
                         return (
@@ -529,7 +533,7 @@ const TicketDashboardPage = () => {
                               <div className="flex items-center gap-2.5">
                                 <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                                   style={{ backgroundColor: idx === 0 ? "#F59E0B" : idx === 1 ? "#9CA3AF" : idx === 2 ? "#CD7F32" : ADMIN_COLORS.primary }}>
-                                  {agentName.charAt(0).toUpperCase()}
+                                  {(agentName || "?").charAt(0).toUpperCase()}
                                 </div>
                                 <div>
                                   <p className="text-sm font-semibold text-gray-900">{agentName}</p>
