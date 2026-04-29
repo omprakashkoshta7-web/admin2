@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   LayoutDashboard, ClipboardList, Clock, Store, Users, DollarSign,
   RotateCcw, BookOpen, TrendingUp, HeadphonesIcon, BarChart2, Settings,
@@ -96,6 +96,17 @@ export default function AdminLayout() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [notifications, setNotifications] = useState<PortalNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const mainRef = useRef<HTMLElement>(null);
+
+  // Scroll main content to top on every route change
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTop = 0;
+    }
+    // Also close any open dropdowns on navigation
+    setShowNotifications(false);
+    setShowUserMenu(false);
+  }, [pathname]);
 
   const baseRoute = "/" + pathname.split("/")[1];
   const title = pageTitles[pathname] || pageTitles[baseRoute] || "Admin";
@@ -363,7 +374,7 @@ export default function AdminLayout() {
             </div>
           </header>
 
-          <main className="admin-main flex-1 overflow-y-auto px-3 pb-4 pt-6 sm:px-4 sm:pb-5 sm:pt-7 md:px-6 md:pb-6 md:pt-8">
+          <main ref={mainRef} className="admin-main flex-1 overflow-y-auto px-3 pb-4 pt-6 sm:px-4 sm:pb-5 sm:pt-7 md:px-6 md:pb-6 md:pt-8">
             <Outlet />
           </main>
         </div>
