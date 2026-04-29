@@ -297,57 +297,54 @@ const CustomerListPage = () => {
         </div>
       )}
 
-      {/* Stats Cards + Export/Refresh in same row */}
-      <div className="flex items-center gap-3">
-        {/* 4 Cards — full width */}
-        <div className="grid grid-cols-4 gap-4 flex-1">
-          <AdminMetricCard 
-            index={0}
-            label="Total Customers" 
-            value={customers.length.toString()} 
-            accent={ADMIN_COLORS.primary} 
-            icon={Users} 
-          />
-          <AdminMetricCard 
-            label="Active" 
-            value={activeCustomers.length.toString()} 
-            accent={ADMIN_COLORS.success} 
-            accentBg={ADMIN_COLORS.successBg}
-            icon={CheckCircle} 
-          />
-          <AdminMetricCard 
-            label="High Risk" 
-            value={highRiskCustomers.length.toString()} 
-            accent={ADMIN_COLORS.critical} 
-            accentBg={ADMIN_COLORS.criticalBg}
-            icon={AlertTriangle} 
-          />
-          <AdminMetricCard 
-            label="Restricted" 
-            value={restrictedCustomers.length.toString()} 
-            accent={ADMIN_COLORS.warning} 
-            accentBg={ADMIN_COLORS.warningBg}
-            icon={Ban} 
-          />
-        </div>
+      {/* Export + Refresh — top right */}
+      <div className="flex items-center justify-end gap-2">
+        <button
+          onClick={exportCustomers}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+        >
+          <Download size={14} />
+          Export
+        </button>
+        <button
+          onClick={() => refetchCustomers()}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+        >
+          <RefreshCw size={14} className={customersLoading ? "animate-spin" : ""} />
+          {customersLoading ? "Loading..." : "Refresh"}
+        </button>
+      </div>
 
-        {/* Export + Refresh — aligned to cards row */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            onClick={exportCustomers}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
-          >
-            <Download size={14} />
-            Export
-          </button>
-          <button
-            onClick={() => refetchCustomers()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
-          >
-            <RefreshCw size={14} className={customersLoading ? "animate-spin" : ""} />
-            {customersLoading ? "Loading..." : "Refresh"}
-          </button>
-        </div>
+      {/* Stats Cards — full width 4 columns */}
+      <div className="grid grid-cols-4 gap-4">
+        <AdminMetricCard 
+          index={0}
+          label="Total Customers" 
+          value={customers.length.toString()} 
+          accent={ADMIN_COLORS.primary} 
+          icon={Users} 
+        />
+        <AdminMetricCard 
+          label="Active" 
+          value={activeCustomers.length.toString()} 
+          accent={ADMIN_COLORS.success} 
+          accentBg={ADMIN_COLORS.successBg}
+          icon={CheckCircle} 
+        />
+        <AdminMetricCard 
+          label="High Risk" 
+          value={highRiskCustomers.length.toString()} 
+          accent={ADMIN_COLORS.critical} 
+          accentBg={ADMIN_COLORS.criticalBg}
+          icon={AlertTriangle} 
+        />
+        <AdminMetricCard 
+          label="Restricted" 
+          value={restrictedCustomers.length.toString()} 
+          accent={ADMIN_COLORS.warning} 
+          accentBg={ADMIN_COLORS.warningBg}
+          icon={Ban} 
+        />
       </div>
 
       {/* Filters and Search — single clean row */}
