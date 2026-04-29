@@ -539,10 +539,11 @@ export default function VendorListPage() {
         </div>
       )}
 
-      {/* Filters and Search */}
+      {/* Search + Filters — combined in one bar */}
       <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Search */}
+          <div className="relative flex-1 min-w-[200px]">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               value={searchTerm}
@@ -551,22 +552,7 @@ export default function VendorListPage() {
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-gray-900 transition"
             />
           </div>
-          <button
-            onClick={refetchVendors}
-            disabled={vendorsLoading}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium hover:bg-gray-50 transition disabled:opacity-50"
-          >
-            <RefreshCw size={14} className={vendorsLoading ? "animate-spin" : ""} />
-            {vendorsLoading ? "Loading..." : "Refresh"}
-          </button>
-        </div>
-      </div>
 
-      {/* Filters Section */}
-      <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-        <div className="flex items-center gap-2">
-          <Filter size={16} className="text-gray-400" />
-          
           {/* Status Filter */}
           <div className="relative">
             <select
@@ -598,7 +584,7 @@ export default function VendorListPage() {
             <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
 
-          {/* Sort Options */}
+          {/* Sort */}
           <div className="relative">
             <select
               value={sortBy}
@@ -620,28 +606,6 @@ export default function VendorListPage() {
           >
             {sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
           </button>
-        </div>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-        <div className="flex items-center gap-3 sm:gap-4 justify-between">
-          <div className="text-center">
-            <p className="text-xs text-gray-500">Active</p>
-            <p className="text-lg font-black" style={{ color: ADMIN_COLORS.success }}>
-              {activeVendors.length}
-            </p>
-          </div>
-          <div className="text-center">
-            <p className="text-xs text-gray-500">Pending</p>
-            <p className="text-lg font-black" style={{ color: ADMIN_COLORS.warning }}>
-              {pendingVendors.length}
-            </p>
-          </div>
-          <div className="text-center">
-            <p className="text-xs text-gray-500">Total</p>
-            <p className="text-lg font-black text-gray-900">{filteredVendors.length}</p>
-          </div>
         </div>
       </div>
 
