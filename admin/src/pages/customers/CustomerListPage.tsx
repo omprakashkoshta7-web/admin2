@@ -445,22 +445,6 @@ const CustomerListPage = () => {
           </button>
         </div>
       </div>
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-gray-500">High Risk</p>
-              <p className="text-lg font-black" style={{ color: ADMIN_COLORS.critical }}>
-                {highRiskCustomers.length}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-gray-500">Total</p>
-              <p className="text-lg font-black text-gray-900">{filteredCustomers.length}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Customers Table */}
       <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
         <div className="overflow-x-auto">
