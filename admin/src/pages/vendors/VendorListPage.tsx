@@ -498,7 +498,7 @@ export default function VendorListPage() {
               </p>
             </div>
             <button
-              onClick={() => setSortBy('healthScore')}
+              onClick={() => { setSortBy('healthScore'); setSortOrder('asc'); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
               className="px-4 py-2 rounded-xl font-bold text-white transition"
               style={{ backgroundColor: ADMIN_COLORS.critical }}
             >

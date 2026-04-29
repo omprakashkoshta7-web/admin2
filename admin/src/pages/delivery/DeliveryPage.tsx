@@ -35,6 +35,8 @@ export default function DeliveryPage() {
   const [zoneForm, setZoneForm] = useState({ zones: "" });
   const [payoutForm, setPayoutForm] = useState({ payoutRatePerKm: "", payoutRatePerOrder: "" });
   const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [payoutSuccess, setPayoutSuccess] = useState(false);
+  const [zoneSuccess, setZoneSuccess] = useState(false);
 
   const normalizePartner = (p: any) => ({
     id: String(p._id || p.id || p.partnerId || ''),
@@ -179,10 +181,14 @@ export default function DeliveryPage() {
     try {
       const zones = zoneForm.zones.split(',').map(z => z.trim()).filter(Boolean);
       await assignDeliveryZones(selectedPartner.id, zones);
-      setShowZoneModal(false);
-      setZoneForm({ zones: "" });
-      setSelectedPartner(null);
+      setZoneSuccess(true);
       refetch();
+      setTimeout(() => {
+        setShowZoneModal(false);
+        setZoneForm({ zones: "" });
+        setSelectedPartner(null);
+        setZoneSuccess(false);
+      }, 1200);
     } catch (err) {
       console.error('Zone assignment failed', err);
       alert('Failed to assign zones');
@@ -194,12 +200,15 @@ export default function DeliveryPage() {
     if (!selectedPartner) return;
     try {
       const payoutRatePerKm = parseFloat(payoutForm.payoutRatePerKm) || 0;
-      
       await setDeliveryPayoutRate(selectedPartner.id, payoutRatePerKm);
-      setShowPayoutModal(false);
-      setPayoutForm({ payoutRatePerKm: "", payoutRatePerOrder: "" });
-      setSelectedPartner(null);
+      setPayoutSuccess(true);
       refetch();
+      setTimeout(() => {
+        setShowPayoutModal(false);
+        setPayoutForm({ payoutRatePerKm: "", payoutRatePerOrder: "" });
+        setSelectedPartner(null);
+        setPayoutSuccess(false);
+      }, 1200);
     } catch (err) {
       console.error('Payout update failed', err);
       alert('Failed to update payout rate');
@@ -355,6 +364,12 @@ export default function DeliveryPage() {
                   <button
                     onClick={() => {
                       setSelectedPartner(p);
+                      // Pre-fill existing payout values
+                      setPayoutForm({
+                        payoutRatePerKm: String(p.raw?.deliveryDetails?.payoutRatePerKm ?? p.raw?.payoutRatePerKm ?? p.rate ?? ""),
+                        payoutRatePerOrder: String(p.raw?.deliveryDetails?.payoutRatePerOrder ?? p.raw?.payoutRatePerOrder ?? ""),
+                      });
+                      setPayoutSuccess(false);
                       setShowPayoutModal(true);
                     }}
                     className="p-2 rounded-lg hover:bg-green-50 transition"
@@ -530,41 +545,51 @@ export default function DeliveryPage() {
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-gray-900">Manage Zones - {selectedPartner.name}</h2>
-              <button onClick={() => { setShowZoneModal(false); setSelectedPartner(null); setZoneForm({ zones: "" }); }}>
+              <button onClick={() => { setShowZoneModal(false); setSelectedPartner(null); setZoneForm({ zones: "" }); setZoneSuccess(false); }}>
                 <X size={18} className="text-gray-400" />
               </button>
             </div>
-            
-            <div className="space-y-4 mb-5">
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Zone Assignments</label>
-                <textarea
-                  value={zoneForm.zones}
-                  onChange={e => setZoneForm({ zones: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-gray-900 transition resize-none"
-                  rows={4}
-                  placeholder="Mumbai, Delhi, Bangalore, Pune"
-                />
-                <p className="text-xs text-gray-500 mt-1">Enter comma-separated list of cities/zones this partner can serve</p>
+
+            {zoneSuccess ? (
+              <div className="flex items-center gap-2 p-4 rounded-xl border" style={{ backgroundColor: ADMIN_COLORS.successBg, borderColor: ADMIN_COLORS.successBorder }}>
+                <CheckCircle size={16} style={{ color: ADMIN_COLORS.success }} />
+                <p className="text-sm font-bold" style={{ color: ADMIN_COLORS.success }}>
+                  Zones updated successfully.
+                </p>
               </div>
-            </div>
-            
-            <div className="flex gap-3">
-              <button 
-                onClick={() => { setShowZoneModal(false); setSelectedPartner(null); setZoneForm({ zones: "" }); }}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleZoneAssignment}
-                disabled={!zoneForm.zones.trim()}
-                className="flex-1 py-2.5 text-white text-sm font-bold rounded-xl transition disabled:opacity-50"
-                style={{ backgroundColor: ADMIN_COLORS.primary }}
-              >
-                Update Zones
-              </button>
-            </div>
+            ) : (
+              <>
+                <div className="space-y-4 mb-5">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Zone Assignments</label>
+                    <textarea
+                      value={zoneForm.zones}
+                      onChange={e => setZoneForm({ zones: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-gray-900 transition resize-none"
+                      rows={4}
+                      placeholder="Mumbai, Delhi, Bangalore, Pune"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Enter comma-separated list of cities/zones this partner can serve</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => { setShowZoneModal(false); setSelectedPartner(null); setZoneForm({ zones: "" }); }}
+                    className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleZoneAssignment}
+                    disabled={!zoneForm.zones.trim()}
+                    className="flex-1 py-2.5 text-white text-sm font-bold rounded-xl transition disabled:opacity-50"
+                    style={{ backgroundColor: ADMIN_COLORS.primary }}
+                  >
+                    Update Zones
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -575,60 +600,68 @@ export default function DeliveryPage() {
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-gray-900">Update Payout Rate - {selectedPartner.name}</h2>
-              <button onClick={() => { setShowPayoutModal(false); setSelectedPartner(null); setPayoutForm({ payoutRatePerKm: "", payoutRatePerOrder: "" }); }}>
+              <button onClick={() => { setShowPayoutModal(false); setSelectedPartner(null); setPayoutForm({ payoutRatePerKm: "", payoutRatePerOrder: "" }); setPayoutSuccess(false); }}>
                 <X size={18} className="text-gray-400" />
               </button>
             </div>
-            
-            <div className="space-y-4 mb-5">
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Payout Rate per KM (₹)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={payoutForm.payoutRatePerKm}
-                  onChange={e => setPayoutForm(p => ({ ...p, payoutRatePerKm: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-gray-900 transition"
-                  placeholder="e.g., 10.50"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Payout Rate per Order (₹)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={payoutForm.payoutRatePerOrder}
-                  onChange={e => setPayoutForm(p => ({ ...p, payoutRatePerOrder: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-gray-900 transition"
-                  placeholder="e.g., 50.00"
-                />
-              </div>
-              
-              <div className="p-3 rounded-xl border" style={{ backgroundColor: ADMIN_COLORS.infoBg, borderColor: ADMIN_COLORS.infoBorder }}>
-                <p className="text-xs font-bold" style={{ color: ADMIN_COLORS.info }}>💡 Payout Calculation</p>
-                <p className="text-xs mt-1" style={{ color: ADMIN_COLORS.info }}>
-                  Total payout = (Distance × Rate per KM) + Rate per Order
+
+            {payoutSuccess ? (
+              <div className="flex items-center gap-2 p-4 rounded-xl border" style={{ backgroundColor: ADMIN_COLORS.successBg, borderColor: ADMIN_COLORS.successBorder }}>
+                <CheckCircle size={16} style={{ color: ADMIN_COLORS.success }} />
+                <p className="text-sm font-bold" style={{ color: ADMIN_COLORS.success }}>
+                  Payout rate updated successfully.
                 </p>
               </div>
-            </div>
-            
-            <div className="flex gap-3">
-              <button 
-                onClick={() => { setShowPayoutModal(false); setSelectedPartner(null); setPayoutForm({ payoutRatePerKm: "", payoutRatePerOrder: "" }); }}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handlePayoutUpdate}
-                disabled={!payoutForm.payoutRatePerKm && !payoutForm.payoutRatePerOrder}
-                className="flex-1 py-2.5 text-white text-sm font-bold rounded-xl transition disabled:opacity-50"
-                style={{ backgroundColor: ADMIN_COLORS.success }}
-              >
-                Update Payout
-              </button>
-            </div>
+            ) : (
+              <>
+                <div className="space-y-4 mb-5">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Payout Rate per KM (₹)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={payoutForm.payoutRatePerKm}
+                      onChange={e => setPayoutForm(p => ({ ...p, payoutRatePerKm: e.target.value }))}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-gray-900 transition"
+                      placeholder="e.g., 10.50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Payout Rate per Order (₹)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={payoutForm.payoutRatePerOrder}
+                      onChange={e => setPayoutForm(p => ({ ...p, payoutRatePerOrder: e.target.value }))}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-gray-900 transition"
+                      placeholder="e.g., 50.00"
+                    />
+                  </div>
+                  <div className="p-3 rounded-xl border" style={{ backgroundColor: ADMIN_COLORS.infoBg, borderColor: ADMIN_COLORS.infoBorder }}>
+                    <p className="text-xs font-bold" style={{ color: ADMIN_COLORS.info }}>Payout Calculation</p>
+                    <p className="text-xs mt-1" style={{ color: ADMIN_COLORS.info }}>
+                      Total payout = (Distance × Rate per KM) + Rate per Order
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => { setShowPayoutModal(false); setSelectedPartner(null); setPayoutForm({ payoutRatePerKm: "", payoutRatePerOrder: "" }); }}
+                    className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handlePayoutUpdate}
+                    disabled={!payoutForm.payoutRatePerKm && !payoutForm.payoutRatePerOrder}
+                    className="flex-1 py-2.5 text-white text-sm font-bold rounded-xl transition disabled:opacity-50"
+                    style={{ backgroundColor: ADMIN_COLORS.success }}
+                  >
+                    Update Payout
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
