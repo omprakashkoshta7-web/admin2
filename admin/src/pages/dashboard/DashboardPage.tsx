@@ -349,57 +349,6 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Kill Switches Panel */}
-      <div className="bg-white rounded-2xl overflow-hidden border-2 border-red-100" style={CS}>
-        <div className="px-3 sm:px-4 py-3 flex items-center gap-2" style={{ borderBottom: "1px solid rgba(197,206,255,0.4)", backgroundColor: "rgba(254,242,242,0.8)" }}>
-          <Shield size={13} style={{ color: ADMIN_COLORS.critical }} />
-          <span className="text-xs font-black uppercase tracking-widest text-gray-500">Emergency Controls</span>
-          <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-500">
-            {killSwitches.filter(s => !s.active).length} systems paused
-          </span>
-        </div>
-        <div className="p-3 sm:p-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {killSwitches.map(sw => (
-              <button
-                key={sw.id}
-                onClick={() => handleKillSwitch(sw.id)}
-                className={`p-3 rounded-xl border-2 transition text-center ${
-                  sw.active 
-                    ? 'border-green-200 bg-green-50 hover:border-green-300' 
-                    : 'border-red-200 bg-red-50 hover:border-red-300'
-                }`}
-              >
-                <div className="flex items-center justify-center mb-2">
-                  {sw.active ? (
-                    <Play size={16} className="text-green-600" />
-                  ) : (
-                    <Pause size={16} className="text-red-600" />
-                  )}
-                </div>
-                <p className={`text-xs font-bold ${sw.active ? 'text-green-800' : 'text-red-800'}`}>
-                  {sw.label}
-                </p>
-                <p className={`text-xs mt-1 ${sw.active ? 'text-green-600' : 'text-red-600'}`}>
-                  {sw.active ? 'Active' : 'Paused'}
-                </p>
-                {sw.critical && (
-                  <div className="mt-1">
-                    <span className="text-xs px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 font-semibold">
-                      Critical
-                    </span>
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-          <div className="mt-3 p-2 rounded-lg bg-yellow-50 border border-yellow-200">
-            <p className="text-xs text-yellow-700">
-              ⚠️ Kill switches immediately halt operations. Use only in emergencies. All actions are logged and require dual authorization.
-            </p>
-          </div>
-        </div>
-      </div>
       {/* Enhanced Alerts Panel */}
       {visibleAlerts.length > 0 && (
         <div className="bg-white rounded-2xl overflow-hidden" style={CS}>

@@ -524,25 +524,6 @@ const OrderListPage = () => {
             </div>
           </div>
 
-          {/* Quick Stats */}
-          <div className="flex items-center gap-3 sm:gap-4 justify-between sm:ml-auto">
-            <div className="text-center">
-              <p className="text-xs text-gray-500">Critical</p>
-              <p className="text-lg font-black" style={{ color: ADMIN_COLORS.critical }}>
-                {criticalOrders.length}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-gray-500">Warning</p>
-              <p className="text-lg font-black" style={{ color: ADMIN_COLORS.warning }}>
-                {warningOrders.length}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-gray-500">Total</p>
-              <p className="text-lg font-black text-gray-900">{filteredOrders.length}</p>
-            </div>
-          </div>
         </div>
       </div>
 
