@@ -1,4 +1,4 @@
-import { CheckCircle, DollarSign, Download, Info, RefreshCw, RotateCcw, Search, X } from "lucide-react";
+import { CheckCircle, DollarSign, Download, RefreshCw, RotateCcw, Search, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAsync } from "../../hooks/useAsync";
 import { getAdminReports, getAdminOrders, processAdminRefund } from "../../api/admin";
@@ -6,12 +6,7 @@ import { ADMIN_COLORS } from "../../utils/colors";
 import LoadingState from "../../components/ui/LoadingState";
 import AdminMetricCard from "../../components/ui/AdminMetricCard";
 
-const emptyForm = {
-  orderId: "",
-  customerId: "",
-  amount: "",
-  reason: "",
-};
+const emptyForm = { orderId: "", customerId: "", amount: "", reason: "" };
 
 export default function RefundsPage() {
   const [form, setForm] = useState(emptyForm);
@@ -20,20 +15,16 @@ export default function RefundsPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showOrderLookup, setShowOrderLookup] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const { data, loading, refetch } = useAsync(() => getAdminReports(), {}, []);
   const { data: refundedOrders, loading: loadingRefunds, refetch: refetchRefunds } = useAsync(
-    () => getAdminOrders({ status: "refunded", limit: 50 }),
-    {},
-    []
+    () => getAdminOrders({ status: "refunded", limit: 50 }), {}, []
   );
   const { data: recentOrders, loading: loadingRecent } = useAsync(
-    () => getAdminOrders({ limit: 100 }),
-    {},
-    []
+    () => getAdminOrders({ limit: 100 }), {}, []
   );
 
-  // Auto-refresh every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => { refetch(); refetchRefunds(); }, 30000);
     return () => clearInterval(interval);
@@ -42,13 +33,13 @@ export default function RefundsPage() {
   const exportRefunds = () => {
     const orders = (refundedOrders as any)?.orders || [];
     const csvContent = [
-      ['Order ID', 'Customer ID', 'Amount', 'Status', 'Date'].join(','),
-      ...orders.map((order: any) => [
-        order._id || '',
-        order.userId || '',
-        order.total || 0,
-        order.status || '',
-        order.createdAt ? new Date(order.createdAt).toISOString().split('T')[0] : '',
+      ['Order ID', 'Customer', 'Amount', 'Status', 'Date'].join(','),
+      ...orders.map((o: any) => [
+        o._id || '',
+        o.customerName || o.userName || o.user?.name || o.userId || '',
+        o.total || 0,
+        o.status || '',
+        o.createdAt ? new Date(o.createdAt).toISOString().split('T')[0] : '',
       ].join(','))
     ].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -65,32 +56,23 @@ export default function RefundsPage() {
       setErrorMessage("Order ID, customer ID, and amount are required.");
       return;
     }
-
-    // Validate ObjectId format (24 character hex string)
     if (!/^[0-9a-f]{24}$/i.test(form.orderId)) {
-      setErrorMessage("Order ID must be a valid 24-character hex string (MongoDB ObjectId format).");
+      setErrorMessage("Order ID must be a valid 24-character hex string.");
       return;
     }
-
     const amount = Number(form.amount);
     if (Number.isNaN(amount) || amount <= 0) {
       setErrorMessage("Enter a valid refund amount.");
       return;
     }
-
     try {
       setSubmitting(true);
       setErrorMessage("");
       setSuccessMessage("");
-
-      await processAdminRefund(form.orderId, {
-        customerId: form.customerId,
-        amount,
-        reason: form.reason || undefined,
-      });
-
+      await processAdminRefund(form.orderId, { customerId: form.customerId, amount, reason: form.reason || undefined });
       setSuccessMessage("Refund processed successfully.");
       setForm(emptyForm);
+      setSelectedOrderId(null);
       refetch();
       refetchRefunds();
     } catch (error: any) {
@@ -107,228 +89,207 @@ export default function RefundsPage() {
       amount: String(order.total || 0),
       reason: "",
     });
-    setShowOrderLookup(false);
-    setSearchQuery("");
+    setSelectedOrderId(order._id);
+    // Keep dropdown open, just mark selected
   };
 
-  const filteredOrders = ((recentOrders as any)?.orders || []).filter((order: any) => {
+  const allOrders: any[] = (recentOrders as any)?.orders || [];
+
+  const filteredOrders = allOrders.filter((order: any) => {
     if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
+    const q = searchQuery.toLowerCase();
+    const name = (order.customerName || order.userName || order.user?.name || "").toLowerCase();
     return (
-      order._id?.toLowerCase().includes(query) ||
-      order.userId?.toLowerCase().includes(query) ||
-      order.status?.toLowerCase().includes(query)
+      order._id?.toLowerCase().includes(q) ||
+      order.userId?.toLowerCase().includes(q) ||
+      order.status?.toLowerCase().includes(q) ||
+      name.includes(q)
     );
   });
 
+  const getCustomerName = (order: any) =>
+    order.customerName || order.userName || order.user?.name ||
+    (order.userId ? order.userId.slice(-8) : "Unknown");
+
   if (loading || loadingRefunds || loadingRecent) {
-    return (
-      <div className="admin-content-wrapper">
-        <LoadingState message="Loading refund data" />
-      </div>
-    );
+    return <div className="admin-content-wrapper"><LoadingState message="Loading refund data" /></div>;
   }
 
   return (
-    <div className="admin-content-wrapper">
-      <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900" style={{ marginBottom: "1.5rem" }}>
-        <div className="flex items-start gap-3">
-          <Info size={18} className="mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="font-bold">Backend-aligned refunds</p>
-            <p className="mt-1 text-blue-800">
-              Backend supports refund processing by order ID, but does not expose a refund queue/list endpoint.
-              This page uses the supported refund action directly instead of showing mock approval tables.
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="admin-content-wrapper space-y-6">
 
       {/* Export + Refresh */}
-      <div className="flex items-center justify-end gap-2" style={{ marginBottom: "1.5rem" }}>
-        <button
-          onClick={exportRefunds}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
-        >
-          <Download size={14} />
-          Export
+      <div className="flex items-center justify-end gap-2">
+        <button onClick={exportRefunds} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold">
+          <Download size={14} /> Export
         </button>
-        <button
-          onClick={() => { refetch(); refetchRefunds(); }}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
-        >
-          <RefreshCw size={14} />
-          Refresh
+        <button onClick={() => { refetch(); refetchRefunds(); }} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold">
+          <RefreshCw size={14} /> Refresh
         </button>
       </div>
 
-      <div className="admin-stats-grid" style={{ marginBottom: "1.5rem" }}>
-        <AdminMetricCard
-          index={0}
-          label="Total Revenue"
-          value={`₹${Number((data as any)?.totalRevenue || 0).toLocaleString()}`}
-          accent={ADMIN_COLORS.primary}
-          icon={DollarSign}
-          note="All orders"
-        />
-        <AdminMetricCard
-          label="Paid Orders"
-          value={`${Number((data as any)?.paidOrders || 0).toLocaleString()}`}
-          accent={ADMIN_COLORS.success}
-          accentBg={ADMIN_COLORS.successBg}
-          icon={CheckCircle}
-          note="Payment received"
-        />
-        <AdminMetricCard
-          label="Refunded Orders"
-          value={`${Number((data as any)?.refundedOrders || 0).toLocaleString()}`}
-          accent={ADMIN_COLORS.warning}
-          accentBg={ADMIN_COLORS.warningBg}
-          icon={RotateCcw}
-          note="Refund processed"
-        />
+      {/* Stats */}
+      <div className="admin-stats-grid">
+        <AdminMetricCard index={0} label="Total Revenue" value={`₹${Number((data as any)?.totalRevenue || 0).toLocaleString()}`} accent={ADMIN_COLORS.primary} icon={DollarSign} note="All orders" />
+        <AdminMetricCard label="Paid Orders" value={`${Number((data as any)?.paidOrders || 0).toLocaleString()}`} accent={ADMIN_COLORS.success} accentBg={ADMIN_COLORS.successBg} icon={CheckCircle} note="Payment received" />
+        <AdminMetricCard label="Refunded Orders" value={`${Number((data as any)?.refundedOrders || 0).toLocaleString()}`} accent={ADMIN_COLORS.warning} accentBg={ADMIN_COLORS.warningBg} icon={RotateCcw} note="Refund processed" />
       </div>
 
+      {/* Process Refund */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <h3 className="text-lg font-bold text-gray-900">Process Refund</h3>
-        <p className="text-sm text-gray-500 mt-1">
-          Sends refund amount to the customer's wallet via `POST /api/admin/refunds/:orderId`.
+        <p className="text-sm text-gray-500 mt-1 mb-4">
+          Sends refund amount to the customer's wallet.
         </p>
 
-        {/* Order Lookup Button */}
-        <div className="mt-4 flex items-center gap-3">
+        {/* Find Order Dropdown Button */}
+        <div className="relative mb-5">
           <button
-            onClick={() => setShowOrderLookup(!showOrderLookup)}
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-700 transition-colors"
+            onClick={() => setShowOrderLookup(prev => !prev)}
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 transition-colors"
           >
             <Search size={14} />
-            {showOrderLookup ? "Hide Order Lookup" : "Find Order to Refund"}
+            Find Order to Refund
+            <ChevronDown size={14} className={`transition-transform ${showOrderLookup ? "rotate-180" : ""}`} />
           </button>
-          {form.orderId && (
-            <span className="text-sm text-green-600 font-medium">
-              ✓ Order selected: {form.orderId.slice(0, 8)}...
-            </span>
-          )}
-        </div>
 
-        {/* Order Lookup Panel */}
-        {showOrderLookup && (
-          <div className="mt-4 border border-blue-200 rounded-xl bg-blue-50 p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-bold text-gray-900">Select Order</h4>
-              <button
-                onClick={() => setShowOrderLookup(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by Order ID, Customer ID, or Status..."
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
-            />
+          {/* Dropdown Panel — always visible when open, never hides on select */}
+          {showOrderLookup && (
+            <div className="absolute left-0 top-full mt-2 w-full min-w-[520px] z-30 bg-white rounded-2xl border border-gray-200 shadow-xl">
+              <div className="p-3 border-b border-gray-100">
+                <div className="relative">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search by Order ID, Customer name, or Status..."
+                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    autoFocus
+                  />
+                </div>
+              </div>
 
-            <div className="max-h-80 overflow-y-auto">
-              {filteredOrders.length > 0 ? (
-                <div className="space-y-2">
-                  {filteredOrders.map((order: any) => (
-                    <div
-                      key={order._id}
-                      onClick={() => handleSelectOrder(order)}
-                      className="p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 cursor-pointer transition-all"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="font-mono text-xs text-gray-900 font-bold">{order._id}</div>
-                          <div className="text-sm text-gray-600 mt-1">
-                            Customer: <span className="font-medium">{order.userId || "N/A"}</span>
+              <div className="max-h-72 overflow-y-auto p-2">
+                {filteredOrders.length > 0 ? (
+                  filteredOrders.map((order: any) => {
+                    const isSelected = selectedOrderId === order._id;
+                    return (
+                      <div
+                        key={order._id}
+                        onClick={() => handleSelectOrder(order)}
+                        className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all mb-1 ${
+                          isSelected
+                            ? "bg-indigo-50 border border-indigo-300"
+                            : "hover:bg-gray-50 border border-transparent"
+                        }`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs text-gray-900 font-bold truncate">{order._id}</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 flex-shrink-0">{order.status || "unknown"}</span>
                           </div>
-                          <div className="flex items-center gap-3 mt-1">
-                            <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
-                              {order.status || "unknown"}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "—"}
-                            </span>
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            {getCustomerName(order)} · {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "—"}
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-gray-900">₹{Number(order.total || 0).toLocaleString()}</div>
+                        <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                          <span className="text-sm font-bold text-gray-900">₹{Number(order.total || 0).toLocaleString()}</span>
+                          {isSelected && (
+                            <span className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center">
+                              <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            </span>
+                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  {searchQuery ? "No orders found matching your search" : "No recent orders available"}
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-gray-400 text-sm">
+                    {searchQuery ? "No orders match your search" : "No recent orders available"}
+                  </div>
+                )}
+              </div>
+
+              {selectedOrderId && (
+                <div className="p-3 border-t border-gray-100 bg-indigo-50 rounded-b-2xl flex items-center justify-between">
+                  <span className="text-xs font-semibold text-indigo-700">
+                    ✓ Order selected — form filled below
+                  </span>
+                  <button
+                    onClick={() => setShowOrderLookup(false)}
+                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 px-3 py-1 rounded-lg hover:bg-indigo-100 transition"
+                  >
+                    Close
+                  </button>
                 </div>
               )}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        <div className="grid grid-cols-2 gap-4 mt-5">
+        {/* Form Fields */}
+        <div className="grid grid-cols-2 gap-4">
           <label className="block">
             <span className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Order ID</span>
             <input
               value={form.orderId}
-              onChange={(event) => setForm((current) => ({ ...current, orderId: event.target.value }))}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none"
+              onChange={(e) => setForm(c => ({ ...c, orderId: e.target.value }))}
+              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
               placeholder="65bd50c6699d5bb41c50dd"
             />
           </label>
-
           <label className="block">
             <span className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Customer ID</span>
             <input
               value={form.customerId}
-              onChange={(event) => setForm((current) => ({ ...current, customerId: event.target.value }))}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none"
+              onChange={(e) => setForm(c => ({ ...c, customerId: e.target.value }))}
+              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
               placeholder="USER-1001"
             />
           </label>
-
           <label className="block">
             <span className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Amount</span>
             <input
-              type="number"
-              min="0"
+              type="number" min="0"
               value={form.amount}
-              onChange={(event) => setForm((current) => ({ ...current, amount: event.target.value }))}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none"
+              onChange={(e) => setForm(c => ({ ...c, amount: e.target.value }))}
+              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
               placeholder="499"
             />
           </label>
-
           <label className="block">
             <span className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Reason</span>
-            <input
+            <select
               value={form.reason}
-              onChange={(event) => setForm((current) => ({ ...current, reason: event.target.value }))}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none"
-              placeholder="Damaged order / cancellation"
-            />
+              onChange={(e) => setForm(c => ({ ...c, reason: e.target.value }))}
+              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+            >
+              <option value="">Select reason...</option>
+              <option value="Refund">Refund</option>
+              <option value="Damaged order">Damaged order</option>
+              <option value="Cancellation">Cancellation</option>
+              <option value="Wrong item delivered">Wrong item delivered</option>
+              <option value="Quality issue">Quality issue</option>
+              <option value="Duplicate payment">Duplicate payment</option>
+              <option value="Customer request">Customer request</option>
+              <option value="Other">Other</option>
+            </select>
           </label>
         </div>
 
-        {errorMessage ? (
+        {errorMessage && (
           <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{errorMessage}</div>
-        ) : null}
-
-        {successMessage ? (
+        )}
+        {successMessage && (
           <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{successMessage}</div>
-        ) : null}
+        )}
 
         <div className="mt-5 flex items-center justify-end">
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60 hover:bg-slate-800 transition"
           >
             <RotateCcw size={14} />
             {submitting ? "Processing..." : "Process Refund"}
@@ -336,11 +297,10 @@ export default function RefundsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mt-6">
+      {/* Refunded Orders Table */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <h3 className="text-lg font-bold text-gray-900">Refunded Orders</h3>
-        <p className="text-sm text-gray-500 mt-1">
-          Recent orders with refund status
-        </p>
+        <p className="text-sm text-gray-500 mt-1">Recent orders with refund status</p>
 
         {(refundedOrders as any)?.orders?.length > 0 ? (
           <div className="mt-4 overflow-x-auto">
@@ -358,7 +318,7 @@ export default function RefundsPage() {
                 {(refundedOrders as any).orders.map((order: any) => (
                   <tr key={order._id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-3 px-4 text-gray-900 font-mono text-xs">{order._id}</td>
-                    <td className="py-3 px-4 text-gray-700">{order.userId || "N/A"}</td>
+                    <td className="py-3 px-4 text-gray-700 font-medium">{getCustomerName(order)}</td>
                     <td className="py-3 px-4 text-right text-gray-900 font-bold">₹{Number(order.total || 0).toLocaleString()}</td>
                     <td className="py-3 px-4 text-gray-600 font-mono text-xs">{order.refundId || "—"}</td>
                     <td className="py-3 px-4 text-gray-600 text-xs">
@@ -370,9 +330,7 @@ export default function RefundsPage() {
             </table>
           </div>
         ) : (
-          <div className="mt-4 text-center py-8 text-gray-500">
-            No refunded orders found
-          </div>
+          <div className="mt-4 text-center py-8 text-gray-500">No refunded orders found</div>
         )}
       </div>
     </div>
