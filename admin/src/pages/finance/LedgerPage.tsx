@@ -136,7 +136,7 @@ export default function LedgerPage() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <p className="text-xs text-gray-600 font-mono">{(log.action || 'N/A').split('.').pop()}</p>
+                      <p className="text-xs text-gray-600 font-mono">{(log.action || 'N/A').split('.').slice(-2).join('.')}</p>
                     </td>
                     <td className="p-4">
                       <p className="text-sm font-semibold text-gray-900">{log.targetType || '—'}</p>

@@ -45,7 +45,21 @@ export default function PlatformPage() {
       setOrderIntake((controlData as any).orderIntakeEnabled ?? true);
       setVendorIntake((controlData as any).vendorIntakeEnabled ?? true);
       setSystemKill((controlData as any).systemKillSwitchEnabled ?? false);
-      setCityPause((controlData as any).cityPause || {});
+
+      // Backend returns pausedCities as an array ["Mumbai", "Delhi"]
+      // Convert to { Mumbai: true, Delhi: true } for easy lookup
+      const pausedArr: string[] = (controlData as any).pausedCities || [];
+      const pauseMap: Record<string, boolean> = {};
+      pausedArr.forEach((city: string) => { pauseMap[city] = true; });
+      setCityPause(pauseMap);
+
+      // Load reason + pausedAt from pausedCityDetails array
+      const details: any[] = (controlData as any).pausedCityDetails || [];
+      const detailsMap: Record<string, { reason?: string; pausedAt?: string }> = {};
+      details.forEach((d: any) => {
+        if (d.city) detailsMap[d.city] = { reason: d.reason, pausedAt: d.pausedAt };
+      });
+      setCityDetails(detailsMap);
       
       // Transform featureFlags object to array format for display
       const flagsArray = Object.entries((controlData as any).featureFlags || {}).map(([key, value]: [string, any]) => ({

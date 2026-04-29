@@ -424,7 +424,7 @@ const CustomerListPage = () => {
           <table className="w-full admin-responsive-table min-w-[1000px] lg:min-w-0">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left p-4">
+                <th className="text-left p-4 w-10">
                   <input
                     type="checkbox"
                     checked={selectedCustomers.length === filteredCustomers.length && filteredCustomers.length > 0}
@@ -432,30 +432,32 @@ const CustomerListPage = () => {
                     className="rounded border-gray-300"
                   />
                 </th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Customer</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Status</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Orders</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Lifetime Value</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Risk Score</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Wallet</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Actions</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[200px]">Customer</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[100px]">Status</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[80px]">Orders</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[130px]">Lifetime Value</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[110px]">Risk Score</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[100px]">Wallet</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[100px]">Actions</th>
               </tr>
             </thead>
             <tbody>
               {customersLoading ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center">
-                    <LoadingState message="Loading customers..." />
+                  <td colSpan={8} className="p-8">
+                    <div className="flex justify-center">
+                      <LoadingState message="Loading customers..." />
+                    </div>
                   </td>
                 </tr>
               ) : sortedCustomers.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center">
-                    <div className="flex flex-col items-center gap-3">
+                  <td colSpan={8} className="p-12">
+                    <div className="flex flex-col items-center justify-center gap-3 text-center">
                       <Users size={48} className="text-gray-300" />
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900">No customers found</h3>
-                        <p className="text-gray-500">
+                        <p className="text-gray-500 mt-1">
                           {customers.length === 0 
                             ? "No customers in database yet. Real backend data - no mock data."
                             : "No customers match your current filters."

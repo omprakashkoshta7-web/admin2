@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Plus, Search, Edit2, Trash2, X, CheckCircle, Package, Download, RefreshCw, Upload } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { getProductCategories, getProducts, createProduct, updateProduct, deleteProduct } from "../../api/admin";
@@ -43,12 +43,13 @@ export default function ProductsPage() {
   // Extract categories from backend data (API returns array directly)
   const categoriesArray = Array.isArray(categoriesData) ? categoriesData : [];
   
-  // Create unique categories list with id and name
-  const categories = categoriesArray.map((c: any) => ({
+  // Memoize categories so the array reference is stable — prevents infinite re-render loop
+  const categories = useMemo(() => categoriesArray.map((c: any) => ({
     id: c.id ?? c._id ?? (c._id ? String(c._id) : undefined) ?? c.slug,
     name: c.name,
     flowType: c.flowType,
-  }));
+    count: c.count,
+  })), [categoriesData]); // only recompute when raw data changes
   
   // Extract products from backend data
   useEffect(() => {

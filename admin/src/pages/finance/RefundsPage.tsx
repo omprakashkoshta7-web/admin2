@@ -14,7 +14,6 @@ export default function RefundsPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [showOrderTable, setShowOrderTable] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const { data, loading, refetch } = useAsync(() => getAdminReports(), {}, []);
@@ -137,9 +136,9 @@ export default function RefundsPage() {
 
       {/* Stats */}
       <div className="admin-stats-grid">
-        <AdminMetricCard index={0} label="Total Revenue" value={`₹${Number((data as any)?.totalRevenue || 0).toLocaleString()}`} accent={ADMIN_COLORS.primary} icon={DollarSign} note="All orders" />
-        <AdminMetricCard label="Paid Orders" value={`${Number((data as any)?.paidOrders || 0).toLocaleString()}`} accent={ADMIN_COLORS.success} accentBg={ADMIN_COLORS.successBg} icon={CheckCircle} note="Payment received" />
-        <AdminMetricCard label="Refunded Orders" value={`${Number((data as any)?.refundedOrders || 0).toLocaleString()}`} accent={ADMIN_COLORS.warning} accentBg={ADMIN_COLORS.warningBg} icon={RotateCcw} note="Refund processed" />
+        <AdminMetricCard index={0} label="Total Revenue" value={`₹${((data as any)?.revenueByDay || []).reduce((s: number, d: any) => s + Number(d.revenue || 0), 0).toLocaleString()}`} accent={ADMIN_COLORS.primary} icon={DollarSign} note="All orders" />
+        <AdminMetricCard label="Paid Orders" value={`${((data as any)?.revenueByDay || []).reduce((s: number, d: any) => s + Number(d.count || 0), 0).toLocaleString()}`} accent={ADMIN_COLORS.success} accentBg={ADMIN_COLORS.successBg} icon={CheckCircle} note="Payment received" />
+        <AdminMetricCard label="Refunded Orders" value={`${((data as any)?.ordersByStatus || []).find((s: any) => s._id === 'refunded')?.count || 0}`} accent={ADMIN_COLORS.warning} accentBg={ADMIN_COLORS.warningBg} icon={RotateCcw} note="Refund processed" />
       </div>
 
       {/* Process Refund */}
@@ -147,25 +146,8 @@ export default function RefundsPage() {
         <h3 className="text-lg font-bold text-gray-900">Process Refund</h3>
         <p className="text-sm text-gray-500 mt-1 mb-5">Sends refund amount to the customer's wallet.</p>
 
-        {/* Find Order Button */}
-        <div className="mb-5">
-          <button
-            onClick={() => setShowOrderTable(prev => !prev)}
-            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 transition-colors"
-          >
-            <Search size={14} />
-            {showOrderTable ? "Hide Order List" : "Find Order to Refund"}
-          </button>
-          {selectedOrderId && (
-            <span className="ml-3 text-sm font-semibold text-indigo-600">
-              ✓ Order selected
-            </span>
-          )}
-        </div>
-
-        {/* Inline Order Table — always visible when shown, never closes on select */}
-        {showOrderTable && (
-          <div className="mb-6 rounded-2xl border border-indigo-100 overflow-hidden">
+        {/* Inline Order Table — always visible */}
+        <div className="mb-6 rounded-2xl border border-indigo-100 overflow-hidden">
             {/* Search bar */}
             <div className="p-3 bg-indigo-50 border-b border-indigo-100">
               <div className="relative">
@@ -176,7 +158,6 @@ export default function RefundsPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by Order ID, Customer name, or Status..."
                   className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-                  autoFocus
                 />
               </div>
             </div>
@@ -256,7 +237,6 @@ export default function RefundsPage() {
               )}
             </div>
           </div>
-        )}
 
         {/* Form Fields */}
         <div className="grid grid-cols-2 gap-4">
