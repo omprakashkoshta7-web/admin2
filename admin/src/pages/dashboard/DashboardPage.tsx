@@ -386,10 +386,10 @@ export default function DashboardPage() {
       )}
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 items-stretch">
 
         {/* Revenue Area Chart */}
-        <div className="lg:col-span-2 bg-white rounded-2xl p-3 sm:p-4" style={CS}>
+        <div className="lg:col-span-2 bg-white rounded-2xl p-3 sm:p-4 flex flex-col" style={CS}>
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-sm font-bold text-gray-900">Revenue — Last 7 Days</p>
@@ -400,23 +400,25 @@ export default function DashboardPage() {
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />Orders</span>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={160}>
-            <AreaChart data={revenueData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="gRev" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#334155" stopOpacity={0.18} />
-                  <stop offset="95%" stopColor="#334155" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(197,206,255,0.4)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={v => `₹${(v/1000).toFixed(0)}K`} tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-              <Tooltip
-                formatter={(value: any, name?: any) => [name === "revenue" ? `₹${Number(value).toLocaleString()}` : value, name === "revenue" ? "Revenue" : "Orders"]}
-                contentStyle={{ borderRadius: 10, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", fontSize: 11 }} />
-              <Area type="monotone" dataKey="revenue" stroke="#334155" strokeWidth={2.5} fill="url(#gRev)" dot={false} />
-            </AreaChart>
-          </ResponsiveContainer>
+          <div className="flex-1 min-h-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={revenueData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="gRev" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#334155" stopOpacity={0.18} />
+                    <stop offset="95%" stopColor="#334155" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(197,206,255,0.4)" />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <YAxis tickFormatter={v => `₹${(v/1000).toFixed(0)}K`} tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  formatter={(value: any, name?: any) => [name === "revenue" ? `₹${Number(value).toLocaleString()}` : value, name === "revenue" ? "Revenue" : "Orders"]}
+                  contentStyle={{ borderRadius: 10, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", fontSize: 11 }} />
+                <Area type="monotone" dataKey="revenue" stroke="#334155" strokeWidth={2.5} fill="url(#gRev)" dot={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Order Status Breakdown */}
