@@ -1,4 +1,4 @@
-import { CheckCircle, DollarSign, Download, RefreshCw, RotateCcw, Search, ChevronDown } from "lucide-react";
+import { CheckCircle, DollarSign, Download, RefreshCw, RotateCcw, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAsync } from "../../hooks/useAsync";
 import { getAdminReports, getAdminOrders, processAdminRefund } from "../../api/admin";
@@ -14,7 +14,7 @@ export default function RefundsPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [showOrderLookup, setShowOrderLookup] = useState(false);
+  const [showOrderTable, setShowOrderTable] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const { data, loading, refetch } = useAsync(() => getAdminReports(), {}, []);
@@ -36,7 +36,7 @@ export default function RefundsPage() {
       ['Order ID', 'Customer', 'Amount', 'Status', 'Date'].join(','),
       ...orders.map((o: any) => [
         o._id || '',
-        o.customerName || o.userName || o.user?.name || o.userId || '',
+        getCustomerName(o),
         o.total || 0,
         o.status || '',
         o.createdAt ? new Date(o.createdAt).toISOString().split('T')[0] : '',
@@ -83,7 +83,6 @@ export default function RefundsPage() {
   };
 
   const handleSelectOrder = (order: any) => {
-    // Auto-fill reason from order data
     const autoReason =
       order.cancellationReason ||
       order.refundReason ||
@@ -91,7 +90,6 @@ export default function RefundsPage() {
       (order.status === "cancelled" ? "Cancellation" : "") ||
       (order.status === "refunded" ? "Refund" : "") ||
       "";
-
     setForm({
       orderId: order._id,
       customerId: order.userId || "",
@@ -132,7 +130,8 @@ export default function RefundsPage() {
           <Download size={14} /> Export
         </button>
         <button onClick={() => { refetch(); refetchRefunds(); }} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold">
-          <RefreshCw size={14} className={loadingRefunds ? "animate-spin" : ""} /> {loadingRefunds ? "Refreshing..." : "Refresh"}
+          <RefreshCw size={14} className={loadingRefunds ? "animate-spin" : ""} />
+          {loadingRefunds ? "Refreshing..." : "Refresh"}
         </button>
       </div>
 
@@ -146,95 +145,118 @@ export default function RefundsPage() {
       {/* Process Refund */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <h3 className="text-lg font-bold text-gray-900">Process Refund</h3>
-        <p className="text-sm text-gray-500 mt-1 mb-4">
-          Sends refund amount to the customer's wallet.
-        </p>
+        <p className="text-sm text-gray-500 mt-1 mb-5">Sends refund amount to the customer's wallet.</p>
 
-        {/* Find Order Dropdown Button */}
-        <div className="relative mb-5">
+        {/* Find Order Button */}
+        <div className="mb-5">
           <button
-            onClick={() => setShowOrderLookup(prev => !prev)}
+            onClick={() => setShowOrderTable(prev => !prev)}
             className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 transition-colors"
           >
             <Search size={14} />
-            Find Order to Refund
-            <ChevronDown size={14} className={`transition-transform ${showOrderLookup ? "rotate-180" : ""}`} />
+            {showOrderTable ? "Hide Order List" : "Find Order to Refund"}
           </button>
+          {selectedOrderId && (
+            <span className="ml-3 text-sm font-semibold text-indigo-600">
+              ✓ Order selected
+            </span>
+          )}
+        </div>
 
-          {/* Dropdown Panel — always visible when open, never hides on select */}
-          {showOrderLookup && (
-            <div className="absolute left-0 top-full mt-2 w-full min-w-[520px] z-30 bg-white rounded-2xl border border-gray-200 shadow-xl">
-              <div className="p-3 border-b border-gray-100">
-                <div className="relative">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search by Order ID, Customer name, or Status..."
-                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    autoFocus
-                  />
-                </div>
+        {/* Inline Order Table — always visible when shown, never closes on select */}
+        {showOrderTable && (
+          <div className="mb-6 rounded-2xl border border-indigo-100 overflow-hidden">
+            {/* Search bar */}
+            <div className="p-3 bg-indigo-50 border-b border-indigo-100">
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by Order ID, Customer name, or Status..."
+                  className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+                  autoFocus
+                />
               </div>
+            </div>
 
-              <div className="max-h-72 overflow-y-auto p-2">
-                {filteredOrders.length > 0 ? (
-                  filteredOrders.map((order: any) => {
-                    const isSelected = selectedOrderId === order._id;
-                    return (
-                      <div
-                        key={order._id}
-                        onClick={() => handleSelectOrder(order)}
-                        className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all mb-1 ${
-                          isSelected
-                            ? "bg-indigo-50 border border-indigo-300"
-                            : "hover:bg-gray-50 border border-transparent"
-                        }`}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs text-gray-900 font-bold truncate">{order._id}</span>
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 flex-shrink-0">{order.status || "unknown"}</span>
-                          </div>
-                          <div className="text-xs text-gray-500 mt-0.5">
-                            {getCustomerName(order)} · {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "—"}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 ml-3 flex-shrink-0">
-                          <span className="text-sm font-bold text-gray-900">₹{Number(order.total || 0).toLocaleString()}</span>
-                          {isSelected && (
-                            <span className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center">
-                              <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            {/* Table */}
+            <div className="overflow-x-auto max-h-72 overflow-y-auto">
+              {filteredOrders.length > 0 ? (
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-gray-50 z-10">
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-2.5 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">Order ID</th>
+                      <th className="text-left py-2.5 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">Customer</th>
+                      <th className="text-left py-2.5 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">Status</th>
+                      <th className="text-right py-2.5 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">Amount</th>
+                      <th className="text-left py-2.5 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">Date</th>
+                      <th className="py-2.5 px-4"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredOrders.map((order: any) => {
+                      const isSelected = selectedOrderId === order._id;
+                      return (
+                        <tr
+                          key={order._id}
+                          onClick={() => handleSelectOrder(order)}
+                          className={`border-b border-gray-50 cursor-pointer transition-all ${
+                            isSelected
+                              ? "bg-indigo-50 hover:bg-indigo-100"
+                              : "hover:bg-gray-50"
+                          }`}
+                        >
+                          <td className="py-3 px-4">
+                            <span className="font-mono text-xs text-gray-900 font-bold">{order._id?.slice(-12)}</span>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-700">{getCustomerName(order)}</td>
+                          <td className="py-3 px-4">
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-semibold capitalize">
+                              {order.status || "unknown"}
                             </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="text-center py-8 text-gray-400 text-sm">
-                    {searchQuery ? "No orders match your search" : "No recent orders available"}
-                  </div>
-                )}
-              </div>
-
-              {selectedOrderId && (
-                <div className="p-3 border-t border-gray-100 bg-indigo-50 rounded-b-2xl flex items-center justify-between">
-                  <span className="text-xs font-semibold text-indigo-700">
-                    ✓ Order selected — form filled below
-                  </span>
-                  <button
-                    onClick={() => setShowOrderLookup(false)}
-                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 px-3 py-1 rounded-lg hover:bg-indigo-100 transition"
-                  >
-                    Close
-                  </button>
+                          </td>
+                          <td className="py-3 px-4 text-right font-bold text-gray-900">
+                            ₹{Number(order.total || 0).toLocaleString()}
+                          </td>
+                          <td className="py-3 px-4 text-xs text-gray-500">
+                            {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "—"}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            {isSelected ? (
+                              <span className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center mx-auto">
+                                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                  <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                              </span>
+                            ) : (
+                              <span className="w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center mx-auto" />
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="text-center py-10 text-gray-400 text-sm">
+                  {searchQuery ? "No orders match your search" : "No recent orders available"}
                 </div>
               )}
             </div>
-          )}
-        </div>
+
+            {/* Footer */}
+            <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+              <span className="text-xs text-gray-500">{filteredOrders.length} order{filteredOrders.length !== 1 ? "s" : ""}</span>
+              {selectedOrderId && (
+                <span className="text-xs font-semibold text-indigo-600">
+                  ✓ Selected — form auto-filled below
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Form Fields */}
         <div className="grid grid-cols-2 gap-4">
@@ -243,7 +265,9 @@ export default function RefundsPage() {
             <input
               value={form.orderId}
               onChange={(e) => setForm(c => ({ ...c, orderId: e.target.value }))}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className={`w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition ${
+                selectedOrderId && form.orderId ? "border-indigo-300 bg-indigo-50" : "border-gray-200"
+              }`}
               placeholder="65bd50c6699d5bb41c50dd"
             />
           </label>
@@ -252,7 +276,9 @@ export default function RefundsPage() {
             <input
               value={form.customerId}
               onChange={(e) => setForm(c => ({ ...c, customerId: e.target.value }))}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className={`w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition ${
+                selectedOrderId && form.customerId ? "border-indigo-300 bg-indigo-50" : "border-gray-200"
+              }`}
               placeholder="USER-1001"
             />
           </label>
@@ -262,7 +288,9 @@ export default function RefundsPage() {
               type="number" min="0"
               value={form.amount}
               onChange={(e) => setForm(c => ({ ...c, amount: e.target.value }))}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className={`w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition ${
+                selectedOrderId && form.amount ? "border-indigo-300 bg-indigo-50" : "border-gray-200"
+              }`}
               placeholder="499"
             />
           </label>
@@ -271,7 +299,9 @@ export default function RefundsPage() {
             <input
               value={form.reason}
               onChange={(e) => setForm(c => ({ ...c, reason: e.target.value }))}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className={`w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition ${
+                selectedOrderId && form.reason ? "border-indigo-300 bg-indigo-50" : "border-gray-200"
+              }`}
               placeholder="Auto-filled from order or type manually"
             />
           </label>
