@@ -2,7 +2,7 @@
 import { 
   Settings, ToggleLeft, ToggleRight, AlertTriangle, Zap,
   MapPin, RefreshCw, Shield, Activity, Power, Flag,
-  XCircle, Globe
+  XCircle
 } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { getAdminControlState, updateAdminControl } from "../../api/admin";
@@ -20,6 +20,8 @@ export default function PlatformPage() {
   const [flags, setFlags] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [cityDetails, setCityDetails] = useState<Record<string, { reason?: string; pausedAt?: string }>>({});
+  const [viewCityModal, setViewCityModal] = useState<string | null>(null);
   const [showCityPause, setShowCityPause] = useState(false);
   const [selectedCity, setSelectedCity] = useState("");
   const [pauseReason, setPauseReason] = useState("");
@@ -176,6 +178,11 @@ export default function PlatformPage() {
         reason: pauseReason 
       });
       setCityPause(prev => ({ ...prev, [selectedCity]: newState }));
+      if (newState) {
+        setCityDetails(prev => ({ ...prev, [selectedCity]: { reason: pauseReason, pausedAt: new Date().toISOString() } }));
+      } else {
+        setCityDetails(prev => { const n = { ...prev }; delete n[selectedCity]; return n; });
+      }
       setShowCityPause(false);
       setSelectedCity("");
       setPauseReason("");
@@ -298,37 +305,74 @@ export default function PlatformPage() {
             Manage Cities
           </button>
         </div>
-        
-        {pausedCities > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {Object.entries(cityPause).filter(([_, paused]) => paused).map(([city]) => (
-              <div key={city} className="flex flex-col gap-2 p-4 rounded-xl border-2 border-orange-200 bg-orange-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <MapPin size={14} className="text-orange-500 flex-shrink-0" />
-                    <span className="text-sm font-bold text-gray-900">{city}</span>
-                  </div>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 font-bold">
-                    Paused
-                  </span>
-                </div>
-                <button
-                  onClick={() => { setSelectedCity(city); setShowCityPause(true); }}
-                  className="w-full text-xs font-bold py-1.5 rounded-lg transition"
-                  style={{ backgroundColor: ADMIN_COLORS.success + "20", color: ADMIN_COLORS.success }}
-                >
-                  ▶ Resume City
-                </button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-6">
-            <Globe size={32} className="mx-auto text-gray-300 mb-2" />
-            <p className="text-sm text-gray-500">All cities are operational</p>
-            <p className="text-xs text-gray-400 mt-1">Click "Manage Cities" to pause specific cities</p>
-          </div>
-        )}
+
+        {/* Cities Table */}
+        <div className="overflow-x-auto rounded-xl border border-gray-100">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">City</th>
+                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">Status</th>
+                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">Reason</th>
+                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">Paused At</th>
+                <th className="py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {availableCities.map((city, i) => {
+                const isPaused = cityPause[city] || false;
+                const details = cityDetails[city];
+                return (
+                  <tr key={city} className={`border-b border-gray-50 hover:bg-gray-50 transition ${i === availableCities.length - 1 ? "border-0" : ""}`}>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <MapPin size={13} style={{ color: isPaused ? ADMIN_COLORS.warning : ADMIN_COLORS.success }} />
+                        <span className="font-semibold text-gray-900">{city}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${
+                        isPaused ? "bg-orange-50 text-orange-600" : "bg-green-50 text-green-600"
+                      }`}>
+                        {isPaused ? "Paused" : "Active"}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-xs text-gray-500 max-w-[180px] truncate">
+                      {isPaused && details?.reason ? details.reason : (isPaused ? "—" : "Operational")}
+                    </td>
+                    <td className="py-3 px-4 text-xs text-gray-500">
+                      {isPaused && details?.pausedAt
+                        ? new Date(details.pausedAt).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })
+                        : "—"}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => setViewCityModal(city)}
+                          className="text-xs px-2.5 py-1.5 rounded-lg font-semibold transition"
+                          style={{ backgroundColor: ADMIN_COLORS.infoBg, color: ADMIN_COLORS.info }}
+                          title="View Details"
+                        >
+                          View
+                        </button>
+                        <button
+                          onClick={() => { setSelectedCity(city); setPauseReason(""); setShowCityPause(true); }}
+                          className="text-xs px-2.5 py-1.5 rounded-lg font-semibold transition"
+                          style={{
+                            backgroundColor: isPaused ? ADMIN_COLORS.successBg : ADMIN_COLORS.warningBg,
+                            color: isPaused ? ADMIN_COLORS.success : ADMIN_COLORS.warning
+                          }}
+                        >
+                          {isPaused ? "Resume" : "Pause"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Feature Flags */}
@@ -514,6 +558,62 @@ export default function PlatformPage() {
                 style={{ backgroundColor: ADMIN_COLORS.critical }}
               >
                 {loading ? "Activating..." : "Confirm & Activate"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View City Details Modal */}
+      {viewCityModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <MapPin size={18} style={{ color: cityPause[viewCityModal] ? ADMIN_COLORS.warning : ADMIN_COLORS.success }} />
+                <h2 className="font-bold text-gray-900">{viewCityModal} — Details</h2>
+              </div>
+              <button onClick={() => setViewCityModal(null)}>
+                <XCircle size={20} className="text-gray-400" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Status</span>
+                <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${
+                  cityPause[viewCityModal] ? "bg-orange-50 text-orange-600" : "bg-green-50 text-green-600"
+                }`}>
+                  {cityPause[viewCityModal] ? "Paused" : "Active"}
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-gray-50">
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Reason</span>
+                <p className="text-sm text-gray-700">
+                  {cityDetails[viewCityModal]?.reason || (cityPause[viewCityModal] ? "No reason provided" : "City is operational")}
+                </p>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Paused At</span>
+                <span className="text-xs text-gray-700">
+                  {cityDetails[viewCityModal]?.pausedAt
+                    ? new Date(cityDetails[viewCityModal]!.pausedAt!).toLocaleString()
+                    : "—"}
+                </span>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-5">
+              <button
+                onClick={() => setViewCityModal(null)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => { setViewCityModal(null); setSelectedCity(viewCityModal); setPauseReason(""); setShowCityPause(true); }}
+                className="flex-1 py-2.5 text-white text-sm font-bold rounded-xl transition"
+                style={{ backgroundColor: cityPause[viewCityModal] ? ADMIN_COLORS.success : ADMIN_COLORS.warning }}
+              >
+                {cityPause[viewCityModal] ? "Resume City" : "Pause City"}
               </button>
             </div>
           </div>
