@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ClipboardList, Clock, Store, Users, DollarSign,
   RotateCcw, BookOpen, TrendingUp, HeadphonesIcon, BarChart2, Settings,
   Truck, LogOut, Bell, ChevronDown, Shield, Wallet,
-  Search, Zap, Package, Layers, Tag, X, Image as ImageIcon
+  Search, Package, Layers, Tag, X, Image as ImageIcon
 } from "lucide-react";
 import { logoutFirebase } from "../../services/firebase-auth";
 import { notificationService, type PortalNotification } from "../../services/notification.service";
@@ -57,7 +57,6 @@ const navGroups = [
     items: [
       { to: "/support", icon: HeadphonesIcon, label: "Support" },
       { to: "/reports", icon: BarChart2, label: "Reports" },
-      { to: "/failures", icon: Zap, label: "Failure Handling" },
       { to: "/platform", icon: Settings, label: "Platform" },
     ]
   },
