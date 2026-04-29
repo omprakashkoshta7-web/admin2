@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ClipboardList, Clock, Store, Users, DollarSign,
   RotateCcw, BookOpen, TrendingUp, HeadphonesIcon, BarChart2, Settings,
   Truck, LogOut, Bell, ChevronDown, Shield, Wallet,
-  Search, Zap, Package, Layers, Tag, User, Lock, X, Image as ImageIcon
+  Search, Zap, Package, Layers, Tag, X, Image as ImageIcon
 } from "lucide-react";
 import { logoutFirebase } from "../../services/firebase-auth";
 import { notificationService, type PortalNotification } from "../../services/notification.service";
@@ -320,28 +320,6 @@ export default function AdminLayout() {
                             <X size={16} className="text-slate-500" />
                           </button>
                         </div>
-                      </div>
-                      <div className="p-2">
-                        <button 
-                          onClick={() => {
-                            setShowUserMenu(false);
-                            navigate('/sessions');
-                          }}
-                          className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition"
-                        >
-                          <User size={14} />
-                          Profile Settings
-                        </button>
-                        <button 
-                          onClick={() => {
-                            setShowUserMenu(false);
-                            navigate('/sessions');
-                          }}
-                          className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition"
-                        >
-                          <Lock size={14} />
-                          Security & Sessions
-                        </button>
                       </div>
                       <div className="p-2 border-t border-slate-100">
                         <button 
