@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   User, Mail, Phone, Shield, Calendar, Clock,
-  Eye, EyeOff, CheckCircle, AlertTriangle, Edit2, Save, X
+  Eye, EyeOff, CheckCircle, AlertTriangle, Save, X
 } from "lucide-react";
 import { ADMIN_COLORS } from "../../utils/colors";
 import { getStoredAdminUser } from "../../api/auth";
