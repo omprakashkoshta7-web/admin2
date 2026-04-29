@@ -4,7 +4,7 @@ import {
   ShoppingCart, DollarSign, AlertTriangle, HeadphonesIcon,
   CheckCircle, XCircle, RefreshCw, Users, Store,
   ChevronRight, Zap,
-  Shield, Bell, Eye
+  Bell, Eye
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip,
@@ -45,7 +45,6 @@ export default function DashboardPage() {
   const { data: ordersData } = useAsync(() => getAdminOrders({ page: 1, limit: 10 }), null, []);
   const { data: vendorsData } = useAsync(() => getAdminVendors({ page: 1, limit: 10 }), null, []);
   const { data: customersData } = useAsync(() => getAdminCustomers({ page: 1, limit: 10 }), null, []);
-  const { data: controlData } = useAsync<AdminControlStateResponse>(getAdminControlState, null, []);
   
   // Fetch tickets list to calculate actual counts
   const { data: ticketsListData } = useAsync(
