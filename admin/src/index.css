@@ -43,8 +43,9 @@ button, input, select, textarea {
   background: var(--admin-frame);
   border: 1px solid rgba(255, 255, 255, 0.85);
   box-shadow: 0 30px 70px rgba(15, 23, 42, 0.1);
-  /* Sidebar fixed, content scrolls independently */
+  /* Lock frame height — sidebar never grows, content area scrolls */
   height: calc(100vh - 2rem);
+  max-height: calc(100vh - 2rem);
   overflow: hidden;
 }
 
@@ -216,6 +217,9 @@ button, input, select, textarea {
 .admin-main {
   font-size: 1rem;
   isolation: isolate;
+  /* Content area scrolls, not the page */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .admin-main .text-xs  { font-size: 0.8rem !important; }
@@ -665,6 +669,30 @@ button, input, select, textarea {
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 .admin-sidebar ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
+
+/* ─── Global Table Fix ───────────────────────────────────────────────────────
+   Every table wrapper gets a fixed max-height + internal scroll.
+   The page/sidebar NEVER stretches — only the table body scrolls.
+   Works for ALL pages automatically without touching individual files.
+──────────────────────────────────────────────────────────────────────────── */
+.admin-main .overflow-x-auto {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 520px;
+}
+
+/* Sticky thead so header stays visible while scrolling */
+.admin-main .overflow-x-auto thead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(248, 249, 255, 0.98) !important;
+}
+
+/* Prevent the outer card from growing with the table */
+.admin-main .overflow-x-auto table {
+  display: table; /* override any flex/block from other rules */
+}
 
 /* Modal overlay — appears from top like vendor modals */
 .admin-modal-overlay {
