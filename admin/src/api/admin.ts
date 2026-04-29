@@ -733,10 +733,10 @@ export const escalateOrder = async (orderId: string, note: string, priority?: st
   });
 };
 
-export const compensateOrder = async (orderId: string, compensationType: string, amount: number, reason?: string) => {
+export const compensateOrder = async (orderId: string, compensationType: string, compensationValue: number, reason?: string) => {
   return await request(`/admin/sla/${orderId}/compensate`, {
     method: 'POST',
-    body: JSON.stringify({ compensationType, amount, reason }),
+    body: JSON.stringify({ compensationType, compensationValue, reason }),
   });
 };
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertTriangle, TrendingDown, CheckCircle, Zap, DollarSign, ChevronDown, Plus, X, RefreshCw, Shield, BarChart2, Search } from "lucide-react";
 import { ADMIN_COLORS } from "../../utils/colors";
 import AdminMetricCard from "../../components/ui/AdminMetricCard";
@@ -144,6 +144,12 @@ export default function SLADashboardPage() {
   };
 
   const refetchAll = () => { refetchRisks(); refetchMetrics(); refetchBreaches(); refetchPolicies(); };
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => { refetchAll(); }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="space-y-6">

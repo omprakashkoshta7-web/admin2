@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search, Eye, Clock, AlertTriangle,
   Users, Activity, MessageSquare,
@@ -60,6 +60,16 @@ const TicketDashboardPage = () => {
   const tickets: any[] = (ticketsData as any)?.tickets || [];
   const staff: any[] = (staffData as any)?.staff || [];
   const agents: any[] = (agentData as any)?.agents || [];
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetchTickets();
+      refetchStats();
+      refetchAgents();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const stats = (statsData as any) || {};
   const byStatus = stats.byStatus || {};

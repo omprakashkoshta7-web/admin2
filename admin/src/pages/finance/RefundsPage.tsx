@@ -1,5 +1,5 @@
 import { CheckCircle, DollarSign, Info, RotateCcw, Search, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAsync } from "../../hooks/useAsync";
 import { getAdminReports, getAdminOrders, processAdminRefund } from "../../api/admin";
 import { ADMIN_COLORS } from "../../utils/colors";
@@ -32,6 +32,12 @@ export default function RefundsPage() {
     {},
     []
   );
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => { refetch(); refetchRefunds(); }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSubmit = async () => {
     if (!form.orderId || !form.customerId || !form.amount) {

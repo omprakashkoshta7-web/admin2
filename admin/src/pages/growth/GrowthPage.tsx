@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TrendingUp, Gift, Plus } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { getCoupons, createCoupon } from "../../api/admin";
@@ -13,6 +13,12 @@ export default function GrowthPage() {
 
   // Fetch real coupons from backend
   const { data: couponsData, refetch: refetchCoupons } = useAsync(() => getCoupons({ limit: 50 }), {}, []);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => { refetchCoupons(); }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Use real data from backend
   const backendCoupons: any[] = (couponsData as any)?.coupons || [];

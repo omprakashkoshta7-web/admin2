@@ -56,6 +56,12 @@ export default function DeliveryPage() {
   // Fetch SLA metrics
   const { data: slaMetrics } = useAsync(() => getDeliverySLAMetrics(), {}, []);
 
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => { refetch(); }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Use real data from backend
   useEffect(() => {
     if ((partnersData as any)) {
