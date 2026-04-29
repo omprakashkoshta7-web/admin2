@@ -462,63 +462,39 @@ export default function StaffListPage() {
 
       {/* Filters and Search */}
       <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input value={search} onChange={e => setSearch(e.target.value)} 
               placeholder="Search staff by name, email, or ID..."
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-gray-900 transition" />
           </div>
           
-          <div className="flex items-center gap-2">
-            <Filter size={16} className="text-gray-400" />
-            
-            <div className="relative">
-              <select
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className="appearance-none px-4 py-2.5 pr-8 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold"
-              >
-                <option value="all">All Roles</option>
-                {Object.keys(rolePermissions).map(role => (
-                  <option key={role} value={role}>{role}</option>
-                ))}
-              </select>
-              <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            </div>
-
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="appearance-none px-4 py-2.5 pr-8 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-              <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            </div>
+          <div className="relative">
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="appearance-none pl-3 pr-8 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold bg-white"
+            >
+              <option value="all">All Roles</option>
+              {Object.keys(rolePermissions).map(role => (
+                <option key={role} value={role}>{role}</option>
+              ))}
+            </select>
+            <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
 
-          {/* Quick Stats */}
-          <div className="flex items-center gap-3 sm:gap-4 justify-between ml-auto">
-            <div className="text-center">
-              <p className="text-xs text-gray-500">Active</p>
-              <p className="text-lg font-black" style={{ color: ADMIN_COLORS.success }}>
-                {activeStaff}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-gray-500">Inactive</p>
-              <p className="text-lg font-black" style={{ color: ADMIN_COLORS.error }}>
-                {inactiveStaff}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-gray-500">Total</p>
-              <p className="text-lg font-black text-gray-900">{filteredMerged.length}</p>
-            </div>
+          <div className="relative">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="appearance-none pl-3 pr-8 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold bg-white"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
         </div>
       </div>
