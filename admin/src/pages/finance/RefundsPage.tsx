@@ -83,14 +83,22 @@ export default function RefundsPage() {
   };
 
   const handleSelectOrder = (order: any) => {
+    // Auto-fill reason from order data
+    const autoReason =
+      order.cancellationReason ||
+      order.refundReason ||
+      order.reason ||
+      (order.status === "cancelled" ? "Cancellation" : "") ||
+      (order.status === "refunded" ? "Refund" : "") ||
+      "";
+
     setForm({
       orderId: order._id,
       customerId: order.userId || "",
       amount: String(order.total || 0),
-      reason: "",
+      reason: autoReason,
     });
     setSelectedOrderId(order._id);
-    // Keep dropdown open, just mark selected
   };
 
   const allOrders: any[] = (recentOrders as any)?.orders || [];
@@ -260,21 +268,12 @@ export default function RefundsPage() {
           </label>
           <label className="block">
             <span className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Reason</span>
-            <select
+            <input
               value={form.reason}
               onChange={(e) => setForm(c => ({ ...c, reason: e.target.value }))}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-            >
-              <option value="">Select reason...</option>
-              <option value="Refund">Refund</option>
-              <option value="Damaged order">Damaged order</option>
-              <option value="Cancellation">Cancellation</option>
-              <option value="Wrong item delivered">Wrong item delivered</option>
-              <option value="Quality issue">Quality issue</option>
-              <option value="Duplicate payment">Duplicate payment</option>
-              <option value="Customer request">Customer request</option>
-              <option value="Other">Other</option>
-            </select>
+              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              placeholder="Auto-filled from order or type manually"
+            />
           </label>
         </div>
 
