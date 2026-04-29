@@ -13,8 +13,8 @@ import {
 import { ADMIN_COLORS } from "../../utils/colors";
 import { useAsync } from "../../hooks/useAsync";
 import AdminMetricCard from "../../components/ui/AdminMetricCard";
-import { getAdminDashboard, getAdminReports, getAdminOrders, getAdminVendors, getAdminCustomers, getAdminControlState, getTicketSummary, getTickets, getSLARisks } from "../../api/admin";
-import type { AdminDashboardResponse, AdminReportsResponse, AdminControlStateResponse } from "../../api/admin";
+import { getAdminDashboard, getAdminReports, getAdminOrders, getAdminVendors, getAdminCustomers, getTicketSummary, getTickets, getSLARisks } from "../../api/admin";
+import type { AdminDashboardResponse, AdminReportsResponse } from "../../api/admin";
 
 const CS = { border: "1px solid rgba(197,206,255,0.52)", boxShadow: "0 12px 30px rgba(15,23,42,0.08)" };
 
