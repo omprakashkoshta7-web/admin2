@@ -223,47 +223,48 @@ export default function PlatformPage() {
         </div>
       )}
 
-      {/* Stats Cards + Refresh in same row */}
-      <div className="flex items-center gap-3">
-        <div className="grid grid-cols-4 gap-4 flex-1">
-          <AdminMetricCard 
-            index={0}
-            label="Order Intake" 
-            value={orderIntake ? "Active" : "Paused"} 
-            accent={orderIntake ? ADMIN_COLORS.success : ADMIN_COLORS.error} 
-            accentBg={orderIntake ? ADMIN_COLORS.successBg : ADMIN_COLORS.errorBg}
-            icon={Activity} 
-          />
-          <AdminMetricCard 
-            label="Vendor Intake" 
-            value={vendorIntake ? "Active" : "Paused"} 
-            accent={vendorIntake ? ADMIN_COLORS.success : ADMIN_COLORS.error} 
-            accentBg={vendorIntake ? ADMIN_COLORS.successBg : ADMIN_COLORS.errorBg}
-            icon={Shield} 
-          />
-          <AdminMetricCard 
-            label="Paused Cities" 
-            value={pausedCities.toString()} 
-            accent={pausedCities > 0 ? ADMIN_COLORS.warning : ADMIN_COLORS.success} 
-            accentBg={pausedCities > 0 ? ADMIN_COLORS.warningBg : ADMIN_COLORS.successBg}
-            icon={MapPin} 
-          />
-          <AdminMetricCard 
-            label="Active Flags" 
-            value={activeFlags.toString()} 
-            accent={ADMIN_COLORS.info} 
-            accentBg={ADMIN_COLORS.infoBg}
-            icon={Flag} 
-          />
-        </div>
-        
+      {/* Refresh button — above stats cards */}
+      <div className="flex items-center justify-end">
         <button
           onClick={() => refetch()}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold flex-shrink-0"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
         >
           <RefreshCw size={14} className={controlLoading ? "animate-spin" : ""} />
           {controlLoading ? "Loading..." : "Refresh"}
         </button>
+      </div>
+
+      {/* Stats Cards — full width 4 columns */}
+      <div className="grid grid-cols-4 gap-4">
+        <AdminMetricCard 
+          index={0}
+          label="Order Intake" 
+          value={orderIntake ? "Active" : "Paused"} 
+          accent={orderIntake ? ADMIN_COLORS.success : ADMIN_COLORS.error} 
+          accentBg={orderIntake ? ADMIN_COLORS.successBg : ADMIN_COLORS.errorBg}
+          icon={Activity} 
+        />
+        <AdminMetricCard 
+          label="Vendor Intake" 
+          value={vendorIntake ? "Active" : "Paused"} 
+          accent={vendorIntake ? ADMIN_COLORS.success : ADMIN_COLORS.error} 
+          accentBg={vendorIntake ? ADMIN_COLORS.successBg : ADMIN_COLORS.errorBg}
+          icon={Shield} 
+        />
+        <AdminMetricCard 
+          label="Paused Cities" 
+          value={pausedCities.toString()} 
+          accent={pausedCities > 0 ? ADMIN_COLORS.warning : ADMIN_COLORS.success} 
+          accentBg={pausedCities > 0 ? ADMIN_COLORS.warningBg : ADMIN_COLORS.successBg}
+          icon={MapPin} 
+        />
+        <AdminMetricCard 
+          label="Active Flags" 
+          value={activeFlags.toString()} 
+          accent={ADMIN_COLORS.info} 
+          accentBg={ADMIN_COLORS.infoBg}
+          icon={Flag} 
+        />
       </div>
 
       {/* Error Display */}
