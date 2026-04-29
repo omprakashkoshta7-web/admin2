@@ -38,6 +38,12 @@ export default function CategoriesPage() {
     []
   );
 
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => { refetchCategories(); }, 30000);
+    return () => clearInterval(interval);
+  }, [refetchCategories]);
+
   // Fetch products to count by category
   const { data: productsData } = useAsync(
     () => getProducts(),

@@ -41,6 +41,12 @@ export default function FailureHandlingPage() {
     []
   );
 
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => { refetchOrders(); }, 30000);
+    return () => clearInterval(interval);
+  }, [refetchOrders]);
+
   // Transform orders to failure events
   useEffect(() => {
     if (ordersData) {

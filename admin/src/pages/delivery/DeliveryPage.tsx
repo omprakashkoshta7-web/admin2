@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from "react";
-import { Truck, Plus, MapPin, X, CheckCircle, Edit, Trash2, Power, DollarSign, TrendingUp, Activity, Search, Filter, Download, RefreshCw } from "lucide-react";
+import { Truck, Plus, MapPin, X, CheckCircle, Edit, Trash2, Power, DollarSign, TrendingUp, Activity, Search, Filter, Download, RefreshCw, AlertTriangle } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { 
   getAdminDeliveryPartners, 
@@ -37,6 +37,8 @@ export default function DeliveryPage() {
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [payoutSuccess, setPayoutSuccess] = useState(false);
   const [zoneSuccess, setZoneSuccess] = useState(false);
+  const [statusError, setStatusError] = useState<string>("");
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const normalizePartner = (p: any) => ({
     id: String(p._id || p.id || p.partnerId || ''),
@@ -47,7 +49,7 @@ export default function DeliveryPage() {
       : (Array.isArray(p.zoneAssignments) ? p.zoneAssignments.join(', ') : ''),
     rate: p.rate ?? p.payoutRate ?? p.payout_rate ?? '',
     sla: p.sla ?? p.averageDeliveryTime ?? 'N/A',
-    status: p.isActive ? 'active' : 'suspended',
+    status: (p.isActive && !p.isBlocked) ? 'active' : 'suspended',
     logo: p.logo || p.logoUrl || '',
     raw: p,
   });
@@ -184,16 +186,31 @@ export default function DeliveryPage() {
   };
 
   const toggleStatus = async (p: any) => {
+    if (togglingId === p.id) return; // prevent double-click
+    setTogglingId(p.id);
+    setStatusError("");
+
+    const suspend = p.status === 'active';
+    const newStatus = suspend ? 'suspended' : 'active';
+
+    // Optimistic update — flip immediately in UI
+    setItems(prev => prev.map(it => it.id === p.id ? { ...it, status: newStatus } : it));
+
     try {
-      const suspend = p.status === 'active';
       if (suspend) {
         await suspendAdminDeliveryPartner(p.id, true);
       } else {
         await resumeDeliveryPartner(p.id);
       }
-      refetch();
-    } catch (err) {
+      refetch(); // sync with server
+    } catch (err: any) {
       console.error('Toggle status failed', err);
+      // Revert optimistic update on failure
+      setItems(prev => prev.map(it => it.id === p.id ? { ...it, status: p.status } : it));
+      setStatusError(err?.message || `Failed to ${suspend ? 'suspend' : 'resume'} partner`);
+      setTimeout(() => setStatusError(""), 4000);
+    } finally {
+      setTogglingId(null);
     }
   };
   
@@ -309,6 +326,15 @@ export default function DeliveryPage() {
         />
       </div>
 
+      {/* Status toggle error banner */}
+      {statusError && (
+        <div className="p-3 rounded-xl border flex items-center gap-2"
+          style={{ backgroundColor: ADMIN_COLORS.errorBg, borderColor: ADMIN_COLORS.errorBorder }}>
+          <AlertTriangle size={15} style={{ color: ADMIN_COLORS.error }} />
+          <p className="text-sm font-semibold" style={{ color: ADMIN_COLORS.error }}>{statusError}</p>
+        </div>
+      )}
+
       {/* Search and Filters */}
       <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
         <div className="flex items-center gap-4">
@@ -418,12 +444,13 @@ export default function DeliveryPage() {
                   
                   <button
                     onClick={() => toggleStatus(p)}
+                    disabled={togglingId === p.id}
                     className={`p-2 rounded-lg transition ${
                       p.status === "active" ? "hover:bg-red-50" : "hover:bg-green-50"
-                    }`}
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                     title={p.status === "active" ? "Suspend Partner" : "Resume Partner"}
                   >
-                    <Power size={16} style={{ color: p.status === "active" ? ADMIN_COLORS.error : ADMIN_COLORS.success }} />
+                    <Power size={16} style={{ color: togglingId === p.id ? '#9ca3af' : (p.status === "active" ? ADMIN_COLORS.error : ADMIN_COLORS.success) }} />
                   </button>
                   
                   <button

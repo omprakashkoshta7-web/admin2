@@ -45,7 +45,7 @@ export default function DeliveryPage() {
       : (Array.isArray(p.zoneAssignments) ? p.zoneAssignments.join(', ') : ''),
     rate: p.rate ?? p.payoutRate ?? p.payout_rate ?? '',
     sla: p.sla ?? p.averageDeliveryTime ?? 'N/A',
-    status: p.isActive ? 'active' : 'suspended',
+    status: (p.isActive && !p.isBlocked) ? 'active' : 'suspended',
     logo: p.logo || p.logoUrl || '',
     raw: p,
   });

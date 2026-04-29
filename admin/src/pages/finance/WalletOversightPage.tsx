@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Download, RotateCcw, Store, Wallet, RefreshCw } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { getAdminReports, getAdminOrders } from "../../api/admin";
@@ -13,11 +14,28 @@ export default function WalletOversightPage() {
     []
   );
 
-  const totalRevenue = Number((data as any)?.totalRevenue || 0);
-  const totalOrders = Number((data as any)?.totalOrders || 0);
-  const paidOrders = Number((data as any)?.paidOrders || 0);
-  
-  // Filter orders by paymentStatus: 'paid'
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => { refetchWallet(); refetchOrders(); }, 30000);
+    return () => clearInterval(interval);
+  }, [refetchWallet, refetchOrders]);
+
+  // Derive stats from what the API actually returns
+  // revenueByDay: [{ _id: "2024-01-01", revenue: 1000, count: 5 }]
+  // ordersByStatus: [{ _id: "delivered", count: 10 }]
+  const revenueByDay: any[] = (data as any)?.revenueByDay || [];
+  const ordersByStatus: any[] = (data as any)?.ordersByStatus || [];
+
+  // Total revenue = sum of all paid-order revenue from revenueByDay
+  const totalRevenue = revenueByDay.reduce((sum: number, d: any) => sum + Number(d.revenue || 0), 0);
+
+  // Total orders = sum of all status counts
+  const totalOrders = ordersByStatus.reduce((sum: number, s: any) => sum + Number(s.count || 0), 0);
+
+  // Paid orders = count from revenueByDay (those are already filtered to paymentStatus: 'paid')
+  const paidOrders = revenueByDay.reduce((sum: number, d: any) => sum + Number(d.count || 0), 0);
+
+  // Filter orders by paymentStatus: 'paid' for the table
   const allOrders = (allOrdersData as any)?.orders || [];
   const paidOrdersList = allOrders.filter((order: any) => order.paymentStatus === 'paid');
 

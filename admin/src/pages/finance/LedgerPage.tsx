@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Lock, Download, Shield, Search, ChevronDown, RefreshCw } from "lucide-react";
 import { ADMIN_COLORS } from "../../utils/colors";
 import { useAsync } from "../../hooks/useAsync";
@@ -11,6 +11,12 @@ export default function LedgerPage() {
   
   // Fetch audit logs from backend
   const { data: auditData, loading, refetch: refetchLogs } = useAsync(() => getAdminAuditLogs(), {}, []);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => { refetchLogs(); }, 30000);
+    return () => clearInterval(interval);
+  }, [refetchLogs]);
   
   const logs = Array.isArray((auditData as any)?.logs) ? (auditData as any).logs : [];
   

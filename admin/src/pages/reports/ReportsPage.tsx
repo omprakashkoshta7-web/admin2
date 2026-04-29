@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Download, FileText, BookOpen, Shield, Lock, TrendingUp, ShoppingCart, BarChart2, RefreshCw, Calendar, User, Tag } from "lucide-react";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip,
@@ -56,6 +56,12 @@ export default function ReportsPage() {
     null,
     []
   );
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => { refetchAudit(); }, 30000);
+    return () => clearInterval(interval);
+  }, [refetchAudit]);
 
   const applyDateFilter = () => {
     setAppliedFrom(dateFrom);

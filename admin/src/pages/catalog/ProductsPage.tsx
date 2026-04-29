@@ -33,6 +33,12 @@ export default function ProductsPage() {
   // Fetch categories and products from backend
   const { data: categoriesData, refetch: refetchCategories } = useAsync(() => getProductCategories(), null, []);
   const { data: productsData, loading: productsLoading, refetch: refetchProducts } = useAsync(() => getProducts({ limit: 100 }), null, []);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => { refetchCategories(); refetchProducts(); }, 30000);
+    return () => clearInterval(interval);
+  }, [refetchCategories, refetchProducts]);
   
   // Extract categories from backend data (API returns array directly)
   const categoriesArray = Array.isArray(categoriesData) ? categoriesData : [];

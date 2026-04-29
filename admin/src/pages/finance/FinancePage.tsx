@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   DollarSign, TrendingUp, Store,
@@ -22,6 +22,12 @@ export default function FinancePage() {
     {},
     []
   );
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => { refetchFinance(); }, 30000);
+    return () => clearInterval(interval);
+  }, [refetchFinance]);
 
   // Use real data from backend - ONLY fields that exist
   const revenueByDay = (reportsData as any)?.revenueByDay || [];
