@@ -7,6 +7,7 @@ import {
 import { ADMIN_COLORS, getRoleColor } from "../../utils/colors";
 import { useAsync } from "../../hooks/useAsync";
 import AdminMetricCard from "../../components/ui/AdminMetricCard";
+import AnimatedCount from "../../components/ui/AnimatedCount";
 import { 
   getAdminStaff, 
   createAdminStaff, 
@@ -382,28 +383,6 @@ export default function StaffListPage() {
       </div>
 
       {/* Pending Approval Alert */}
-      {pendingApproval > 0 && (
-        <div 
-          className="p-4 rounded-2xl border-2"
-          style={{ 
-            backgroundColor: ADMIN_COLORS.warningBg,
-            borderColor: ADMIN_COLORS.warning
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <AlertTriangle size={20} style={{ color: ADMIN_COLORS.warning }} />
-            <div className="flex-1">
-              <p className="font-bold" style={{ color: ADMIN_COLORS.warning }}>
-                {pendingApproval} Staff Member{pendingApproval > 1 ? 's' : ''} Pending Approval
-              </p>
-              <p className="text-sm mt-1" style={{ color: ADMIN_COLORS.warning }}>
-                Admin/SuperAdmin roles require approval before activation
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Pending Approval Alert */}
       {pendingApproval > 0 && (
         <div 
@@ -417,7 +396,7 @@ export default function StaffListPage() {
             <AlertTriangle size={20} style={{ color: ADMIN_COLORS.warning }} />
             <div className="flex-1">
               <p className="font-bold" style={{ color: ADMIN_COLORS.warning }}>
-                {pendingApproval} Staff Member{pendingApproval > 1 ? 's' : ''} Pending Approval
+                <AnimatedCount value={pendingApproval} /> Staff Member{pendingApproval > 1 ? 's' : ''} Pending Approval
               </p>
               <p className="text-sm mt-1" style={{ color: ADMIN_COLORS.warning }}>
                 Admin/SuperAdmin roles require approval before activation

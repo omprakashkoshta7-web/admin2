@@ -18,6 +18,7 @@ import {
   getAdminOrderById 
 } from "../../api/admin";
 import AdminMetricCard from "../../components/ui/AdminMetricCard";
+import AnimatedCount from "../../components/ui/AnimatedCount";
 
 interface Order {
   id: string;
@@ -418,7 +419,7 @@ const OrderListPage = () => {
             <AlertTriangle size={20} style={{ color: ADMIN_COLORS.critical }} />
             <div className="flex-1">
               <p className="font-bold" style={{ color: ADMIN_COLORS.critical }}>
-                {criticalOrders.length} Critical SLA Risk{criticalOrders.length > 1 ? 's' : ''}
+                <AnimatedCount value={criticalOrders.length} /> Critical SLA Risk{criticalOrders.length > 1 ? 's' : ''}
               </p>
               <p className="text-sm mt-1" style={{ color: ADMIN_COLORS.critical }}>
                 Orders requiring immediate intervention to prevent SLA breach

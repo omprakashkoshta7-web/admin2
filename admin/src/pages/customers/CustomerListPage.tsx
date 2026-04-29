@@ -11,6 +11,7 @@ import { ADMIN_COLORS, getStatusColor } from "../../utils/colors";
 import { useAsync } from "../../hooks/useAsync";
 import LoadingState from "../../components/ui/LoadingState";
 import AdminMetricCard from "../../components/ui/AdminMetricCard";
+import AnimatedCount from "../../components/ui/AnimatedCount";
 import { 
   getAdminCustomers, 
   getAdminCustomerById,
@@ -280,7 +281,7 @@ const CustomerListPage = () => {
             <AlertTriangle size={20} style={{ color: ADMIN_COLORS.critical }} />
             <div className="flex-1">
               <p className="font-bold" style={{ color: ADMIN_COLORS.critical }}>
-                {highRiskCustomers.length} High Risk Customer{highRiskCustomers.length > 1 ? 's' : ''}
+                <AnimatedCount value={highRiskCustomers.length} /> High Risk Customer{highRiskCustomers.length > 1 ? 's' : ''}
               </p>
               <p className="text-sm mt-1" style={{ color: ADMIN_COLORS.critical }}>
                 Customers with risk score below 50 requiring immediate review

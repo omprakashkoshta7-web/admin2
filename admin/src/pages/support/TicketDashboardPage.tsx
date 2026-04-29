@@ -13,6 +13,7 @@ import {
 } from "../../api/admin";
 import LoadingState from "../../components/ui/LoadingState";
 import AdminMetricCard from "../../components/ui/AdminMetricCard";
+import AnimatedCount from "../../components/ui/AnimatedCount";
 
 type Tab = "tickets" | "agents";
 
@@ -183,7 +184,7 @@ const TicketDashboardPage = () => {
           <AlertTriangle size={20} style={{ color: ADMIN_COLORS.critical }} />
           <div className="flex-1">
             <p className="font-bold" style={{ color: ADMIN_COLORS.critical }}>
-              {urgentCount} Urgent Ticket{urgentCount > 1 ? "s" : ""} Need Immediate Attention
+              <AnimatedCount value={urgentCount} /> Urgent Ticket{urgentCount > 1 ? "s" : ""} Need Immediate Attention
             </p>
             <p className="text-xs mt-0.5" style={{ color: ADMIN_COLORS.critical }}>
               These tickets are marked urgent and require admin intervention
