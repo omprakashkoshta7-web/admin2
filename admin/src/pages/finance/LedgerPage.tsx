@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Lock, Download, Shield, Search, ChevronDown } from "lucide-react";
+import { Lock, Download, Shield, Search, ChevronDown, RefreshCw } from "lucide-react";
 import { ADMIN_COLORS } from "../../utils/colors";
 import { useAsync } from "../../hooks/useAsync";
 import { getAdminAuditLogs } from "../../api/admin";
@@ -10,7 +10,7 @@ export default function LedgerPage() {
   const [actionFilter, setActionFilter] = useState("all");
   
   // Fetch audit logs from backend
-  const { data: auditData, loading } = useAsync(() => getAdminAuditLogs(), {}, []);
+  const { data: auditData, loading, refetch: refetchLogs } = useAsync(() => getAdminAuditLogs(), {}, []);
   
   const logs = Array.isArray((auditData as any)?.logs) ? (auditData as any).logs : [];
   
@@ -25,6 +25,26 @@ export default function LedgerPage() {
   });
 
   const uniqueActions = Array.from(new Set(logs.map((l: any) => l.action).filter(Boolean)));
+
+  const exportLogs = () => {
+    const csvContent = [
+      ['Actor ID', 'Action', 'Target ID', 'Reason', 'Timestamp'].join(','),
+      ...filtered.map((log: any) => [
+        log.actorId || '',
+        log.action || '',
+        log.targetId || '',
+        `"${(log.reason || '').replace(/"/g, '""')}"`,
+        log.createdAt ? new Date(log.createdAt).toISOString() : '',
+      ].join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   if (loading) {
     return (
@@ -45,9 +65,14 @@ export default function LedgerPage() {
             <span className="text-xs font-bold text-gray-600">Audit Log</span>
           </div>
           <button 
-            className="flex items-center gap-2 px-4 py-2 text-white text-sm font-bold rounded-xl transition"
-            style={{ backgroundColor: ADMIN_COLORS.primary }}>
+            onClick={exportLogs}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold">
             <Download size={14} /> Export CSV
+          </button>
+          <button
+            onClick={() => refetchLogs()}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold">
+            <RefreshCw size={14} /> Refresh
           </button>
         </div>
       </div>

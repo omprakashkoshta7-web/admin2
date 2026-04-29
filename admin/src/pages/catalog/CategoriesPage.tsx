@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Plus, Edit2, Trash2, X, CheckCircle, Layers, ToggleLeft, ToggleRight, ChevronRight, Tag, Package, Upload, Image as ImageIcon } from "lucide-react";
+import { Plus, Edit2, Trash2, X, CheckCircle, Layers, ToggleLeft, ToggleRight, ChevronRight, Tag, Package, Upload, Image as ImageIcon, Download, RefreshCw } from "lucide-react";
 import { ADMIN_COLORS } from "../../utils/colors";
 import { useAsync } from "../../hooks/useAsync";
 import { getProductCategories, createProductCategory, updateProductCategory, deleteProductCategory, getProducts } from "../../api/admin";
@@ -298,6 +298,26 @@ export default function CategoriesPage() {
       alert(`Error: ${(error as any)?.message || 'Failed to delete category'}`);
     }
   };
+
+  const exportCategories = () => {
+    const csvContent = [
+      ['ID', 'Name', 'Slug', 'Flow Type', 'Active'].join(','),
+      ...cats.map((c: any) => [
+        c._id || c.id || '',
+        `"${(c.name || '').replace(/"/g, '""')}"`,
+        c.slug || '',
+        c.flowType || '',
+        c.active ? 'Yes' : 'No',
+      ].join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `categories-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
   
   const toggle = async (id: string) => {
     try {
@@ -324,11 +344,27 @@ export default function CategoriesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2"></div>
-        <button onClick={openAdd}
-          className="flex items-center gap-1.5 px-4 py-2.5 text-white text-sm font-bold rounded-xl transition hover:opacity-90"
-          style={{ backgroundColor: ADMIN_COLORS.primary }}>
-          <Plus size={14} /> Add Category
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={exportCategories}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+          >
+            <Download size={14} />
+            Export
+          </button>
+          <button
+            onClick={() => refetchCategories()}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+          >
+            <RefreshCw size={14} />
+            Refresh
+          </button>
+          <button onClick={openAdd}
+            className="flex items-center gap-1.5 px-4 py-2.5 text-white text-sm font-bold rounded-xl transition hover:opacity-90"
+            style={{ backgroundColor: ADMIN_COLORS.primary }}>
+            <Plus size={14} /> Add Category
+          </button>
+        </div>
       </div>
 
       {/* Stats */}

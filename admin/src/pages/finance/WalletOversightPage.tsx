@@ -1,4 +1,4 @@
-import { RotateCcw, Store, Wallet } from "lucide-react";
+import { Download, RotateCcw, Store, Wallet } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { getAdminReports, getAdminOrders } from "../../api/admin";
 import { ADMIN_COLORS } from "../../utils/colors";
@@ -6,8 +6,8 @@ import LoadingState from "../../components/ui/LoadingState";
 import AdminMetricCard from "../../components/ui/AdminMetricCard";
 
 export default function WalletOversightPage() {
-  const { data, loading } = useAsync(() => getAdminReports(), {}, []);
-  const { data: allOrdersData, loading: loadingOrders } = useAsync(
+  const { data, loading, refetch: refetchWallet } = useAsync(() => getAdminReports(), {}, []);
+  const { data: allOrdersData, loading: loadingOrders, refetch: refetchOrders } = useAsync(
     () => getAdminOrders({ limit: 100 }),
     {},
     []
@@ -21,6 +21,27 @@ export default function WalletOversightPage() {
   const allOrders = (allOrdersData as any)?.orders || [];
   const paidOrdersList = allOrders.filter((order: any) => order.paymentStatus === 'paid');
 
+  const exportWallet = () => {
+    const csvContent = [
+      ['Order ID', 'Customer', 'Vendor', 'Amount', 'Status', 'Date'].join(','),
+      ...paidOrdersList.map((order: any) => [
+        order._id || '',
+        order.customerName || order.userName || order.user?.name || order.userId || '',
+        order.vendorName || order.vendor?.name || order.vendor?.businessName || order.vendorId || '',
+        order.total || 0,
+        order.paymentStatus || 'paid',
+        order.createdAt ? new Date(order.createdAt).toISOString().split('T')[0] : '',
+      ].join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `wallet-oversight-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   if (loading || loadingOrders) {
     return (
       <div className="admin-content-wrapper">
@@ -31,6 +52,23 @@ export default function WalletOversightPage() {
 
   return (
     <div className="admin-content-wrapper">
+      {/* Export + Refresh */}
+      <div className="flex items-center justify-end gap-2" style={{ marginBottom: "1.5rem" }}>
+        <button
+          onClick={exportWallet}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+        >
+          <Download size={14} />
+          Export
+        </button>
+        <button
+          onClick={() => { refetchWallet(); refetchOrders(); }}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+        >
+          <RotateCcw size={14} />
+          Refresh
+        </button>
+      </div>
       <div className="grid grid-cols-3 gap-4" style={{ marginBottom: "1.5rem" }}>
         <AdminMetricCard
           index={0}

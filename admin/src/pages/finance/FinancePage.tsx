@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { 
   DollarSign, TrendingUp, Store,
   RefreshCw, Eye,
-  Activity
+  Activity, Download
 } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { ADMIN_COLORS } from "../../utils/colors";
@@ -17,7 +17,7 @@ export default function FinancePage() {
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('month');
 
   // Fetch financial data from backend
-  const { data: reportsData, loading: reportsLoading } = useAsync(
+  const { data: reportsData, loading: reportsLoading, refetch: refetchFinance } = useAsync(
     () => getAdminReports(),
     {},
     []
@@ -38,6 +38,24 @@ export default function FinancePage() {
     revenue: day.revenue || 0,
     orders: day.count || 0,
   }));
+
+  const exportRevenue = () => {
+    const csvContent = [
+      ['Date', 'Revenue', 'Orders'].join(','),
+      ...revenueTrend.map((item: any) => [
+        item.date,
+        item.revenue,
+        item.orders,
+      ].join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `revenue-trend-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   if (reportsLoading) {
     return (
@@ -76,7 +94,14 @@ export default function FinancePage() {
             View Ledger
           </button>
           <button
-            onClick={() => window.location.reload()}
+            onClick={exportRevenue}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+          >
+            <Download size={14} />
+            Export
+          </button>
+          <button
+            onClick={() => refetchFinance()}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
           >
             <RefreshCw size={14} />

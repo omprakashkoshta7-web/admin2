@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   AlertTriangle, RefreshCw, DollarSign, ShieldAlert,
-  CheckCircle, Clock, Zap, ChevronRight, X, Store, Truck
+  CheckCircle, Clock, Zap, ChevronRight, X, Store, Truck, Download
 } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { getAdminOrders } from "../../api/admin";
@@ -35,7 +35,7 @@ export default function FailureHandlingPage() {
   const [actionDone, setActionDone] = useState<string[]>([]);
 
   // Fetch orders from backend
-  const { data: ordersData, loading } = useAsync(
+  const { data: ordersData, loading, refetch: refetchOrders } = useAsync(
     () => getAdminOrders({ limit: 100 }),
     [],
     []
@@ -122,6 +122,26 @@ export default function FailureHandlingPage() {
   const criticalCount = events.filter(e => e.severity === "critical").length;
   const warningCount = events.filter(e => e.severity === "warning").length;
 
+  const exportEvents = () => {
+    const csvContent = [
+      ['Order ID', 'Type', 'Severity', 'Status', 'Time'].join(','),
+      ...events.map((ev: any) => [
+        ev.id || '',
+        ev.type || '',
+        ev.severity || '',
+        typeConfig[ev.type]?.label || ev.type || '',
+        ev.time || '',
+      ].join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `failure-events-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -132,6 +152,24 @@ export default function FailureHandlingPage() {
 
   return (
     <div className="space-y-4 pb-2">
+
+      {/* Header Actions */}
+      <div className="flex items-center justify-end gap-2">
+        <button
+          onClick={exportEvents}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+        >
+          <Download size={14} />
+          Export
+        </button>
+        <button
+          onClick={() => refetchOrders()}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+        >
+          <RefreshCw size={14} />
+          Refresh
+        </button>
+      </div>
 
       {/* KPI Row */}
       <div className="grid grid-cols-4 gap-3">

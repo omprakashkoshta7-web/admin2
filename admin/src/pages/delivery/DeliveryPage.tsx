@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from "react";
-import { Truck, Plus, MapPin, X, CheckCircle, Edit, Trash2, Power, DollarSign, TrendingUp, Activity, Search, Filter } from "lucide-react";
+import { Truck, Plus, MapPin, X, CheckCircle, Edit, Trash2, Power, DollarSign, TrendingUp, Activity, Search, Filter, Download } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { 
   getAdminDeliveryPartners, 
@@ -88,6 +88,28 @@ export default function DeliveryPage() {
     const matchesStatus = statusFilter === "all" || p.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const exportDelivery = () => {
+    const csvContent = [
+      ['ID', 'Name', 'Type', 'Cities', 'Status', 'Rate', 'SLA'].join(','),
+      ...items.map((p: any) => [
+        p.id,
+        `"${(p.name || '').replace(/"/g, '""')}"`,
+        p.type || '',
+        `"${(p.cities || '').replace(/"/g, '""')}"`,
+        p.status || '',
+        p.rate || '',
+        p.sla || '',
+      ].join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `delivery-partners-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   const add = async () => {
     if (!form.name) return;
@@ -233,9 +255,25 @@ export default function DeliveryPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2"></div>
-        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2.5 text-white text-sm font-bold rounded-xl transition" style={{ backgroundColor: ADMIN_COLORS.primary }}>
-          <Plus size={15} /> Add Partner
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={exportDelivery}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+          >
+            <Download size={14} />
+            Export
+          </button>
+          <button
+            onClick={() => refetch()}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+          >
+            <TrendingUp size={14} className="rotate-0" />
+            Refresh
+          </button>
+          <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2.5 text-white text-sm font-bold rounded-xl transition" style={{ backgroundColor: ADMIN_COLORS.primary }}>
+            <Plus size={15} /> Add Partner
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}

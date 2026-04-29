@@ -1,4 +1,4 @@
-import { CheckCircle, DollarSign, Info, RotateCcw, Search, X } from "lucide-react";
+import { CheckCircle, DollarSign, Download, Info, RefreshCw, RotateCcw, Search, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAsync } from "../../hooks/useAsync";
 import { getAdminReports, getAdminOrders, processAdminRefund } from "../../api/admin";
@@ -38,6 +38,27 @@ export default function RefundsPage() {
     const interval = setInterval(() => { refetch(); refetchRefunds(); }, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const exportRefunds = () => {
+    const orders = (refundedOrders as any)?.orders || [];
+    const csvContent = [
+      ['Order ID', 'Customer ID', 'Amount', 'Status', 'Date'].join(','),
+      ...orders.map((order: any) => [
+        order._id || '',
+        order.userId || '',
+        order.total || 0,
+        order.status || '',
+        order.createdAt ? new Date(order.createdAt).toISOString().split('T')[0] : '',
+      ].join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `refunds-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   const handleSubmit = async () => {
     if (!form.orderId || !form.customerId || !form.amount) {
@@ -121,6 +142,24 @@ export default function RefundsPage() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Export + Refresh */}
+      <div className="flex items-center justify-end gap-2" style={{ marginBottom: "1.5rem" }}>
+        <button
+          onClick={exportRefunds}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+        >
+          <Download size={14} />
+          Export
+        </button>
+        <button
+          onClick={() => { refetch(); refetchRefunds(); }}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+        >
+          <RefreshCw size={14} />
+          Refresh
+        </button>
       </div>
 
       <div className="admin-stats-grid" style={{ marginBottom: "1.5rem" }}>

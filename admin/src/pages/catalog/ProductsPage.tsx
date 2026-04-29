@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Edit2, Trash2, X, CheckCircle, Package } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, X, CheckCircle, Package, Download, RefreshCw } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { getProductCategories, getProducts, createProduct, updateProduct, deleteProduct } from "../../api/admin";
 
@@ -210,6 +210,27 @@ export default function ProductsPage() {
     }
   };
 
+  const exportProducts = () => {
+    const csvContent = [
+      ['ID', 'Name', 'Category', 'Base Price', 'Unit', 'Active'].join(','),
+      ...products.map((p: Product) => [
+        p.id,
+        `"${(p.name || '').replace(/"/g, '""')}"`,
+        `"${(p.category || '').replace(/"/g, '""')}"`,
+        p.basePrice,
+        `"${(p.unit || '').replace(/"/g, '""')}"`,
+        p.active ? 'Yes' : 'No',
+      ].join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `products-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-4">
       {/* Toolbar */}
@@ -244,6 +265,20 @@ export default function ProductsPage() {
           className="ml-auto flex items-center gap-1.5 px-4 py-2 text-white text-sm font-bold rounded-xl"
           style={{ backgroundColor: "#334155" }}>
           <Plus size={14} /> Add Product
+        </button>
+        <button
+          onClick={exportProducts}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+        >
+          <Download size={14} />
+          Export
+        </button>
+        <button
+          onClick={() => refetchProducts()}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+        >
+          <RefreshCw size={14} />
+          Refresh
         </button>
       </div>
 

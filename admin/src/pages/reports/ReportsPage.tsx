@@ -107,6 +107,71 @@ export default function ReportsPage() {
 
   const uniqueActions = [...new Set(allLogs.map((l) => l.action).filter(Boolean))];
 
+  // ── Export handlers ─────────────────────────────────────────────────────────
+  const exportOrdersReport = () => {
+    const orders = revenueChartData;
+    const csvContent = [
+      ['Date', 'Orders', 'Gross Revenue', 'Net Revenue'].join(','),
+      ...orders.map((item: any) => [item.date, item.orders, item.gross, item.net].join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `orders-report-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const exportRevenueReport = () => {
+    const csvContent = [
+      ['Date', 'Gross Revenue', 'Net Revenue', 'Orders'].join(','),
+      ...revenueChartData.map((item: any) => [item.date, item.gross, item.net, item.orders].join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `revenue-report-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const exportInvoices = () => {
+    const csvContent = [
+      ['Date', 'Orders', 'Gross Revenue', 'Net Revenue'].join(','),
+      ...revenueChartData.map((item: any) => [item.date, item.orders, item.gross, item.net].join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `invoices-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const exportAuditLogs = () => {
+    const csvContent = [
+      ['Timestamp', 'Action', 'Actor', 'Target Type', 'Target ID', 'Details'].join(','),
+      ...filteredLogs.map((log: any) => [
+        log.createdAt ? new Date(log.createdAt).toISOString() : '',
+        log.action || '',
+        log.actorName || log.actorId || '',
+        log.targetType || '',
+        log.targetId || '',
+        `"${JSON.stringify(log.details || log.description || '').replace(/"/g, '""')}"`,
+      ].join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   if (reportsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -314,10 +379,10 @@ export default function ReportsPage() {
       {/* ── Export Cards ────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3">
         {[
-          { label: "Orders Report", desc: "All orders with status, vendor, SLA", icon: FileText, format: "CSV/Excel", color: "#334155" },
-          { label: "Revenue Report", desc: "Gross/net revenue by store and period", icon: FileText, format: "CSV/Excel", color: "#10b981" },
-          { label: "Invoice Export", desc: "GST-compliant invoices", icon: BookOpen, format: "PDF", color: "#06b6d4" },
-          { label: "Audit Logs Export", desc: "All admin/staff actions — append-only", icon: Shield, format: "CSV", color: "#f59e0b" },
+          { label: "Orders Report", desc: "All orders with status, vendor, SLA", icon: FileText, format: "CSV/Excel", color: "#334155", onClick: exportOrdersReport },
+          { label: "Revenue Report", desc: "Gross/net revenue by store and period", icon: FileText, format: "CSV/Excel", color: "#10b981", onClick: exportRevenueReport },
+          { label: "Invoice Export", desc: "GST-compliant invoices", icon: BookOpen, format: "PDF", color: "#06b6d4", onClick: exportInvoices },
+          { label: "Audit Logs Export", desc: "All admin/staff actions — append-only", icon: Shield, format: "CSV", color: "#f59e0b", onClick: exportAuditLogs },
         ].map((r) => (
           <div key={r.label} className="bg-white rounded-xl p-4 flex items-start gap-3" style={CS}>
             <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: r.color + "18" }}>
@@ -330,7 +395,7 @@ export default function ReportsPage() {
                 {r.format}
               </span>
             </div>
-            <button className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-bold rounded-lg flex-shrink-0" style={{ backgroundColor: "#334155" }}>
+            <button onClick={r.onClick} className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-bold rounded-lg flex-shrink-0" style={{ backgroundColor: "#334155" }}>
               <Download size={12} /> Export
             </button>
           </div>

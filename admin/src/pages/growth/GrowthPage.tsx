@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, Gift, Plus } from "lucide-react";
+import { TrendingUp, Gift, Plus, Download, RefreshCw } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { getCoupons, createCoupon } from "../../api/admin";
 
@@ -25,6 +25,28 @@ export default function GrowthPage() {
   const activeCouponsCount = backendCoupons.filter((c: any) => c.isActive).length;
   const totalCoupons = backendCoupons.length;
   const totalUsed = backendCoupons.reduce((sum: number, c: any) => sum + (c.usedCount || 0), 0);
+
+  const exportCoupons = () => {
+    const csvContent = [
+      ['Code', 'Discount Type', 'Discount Value', 'Usage Limit', 'Used Count', 'Active', 'Created'].join(','),
+      ...backendCoupons.map((c: any) => [
+        c.code || '',
+        c.discountType || '',
+        c.discountValue || 0,
+        c.usageLimit || 0,
+        c.usedCount || 0,
+        c.isActive ? 'Yes' : 'No',
+        c.createdAt ? new Date(c.createdAt).toISOString().split('T')[0] : '',
+      ].join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `coupons-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   const addCoupon = async () => {
     if (!form.code || !form.discount) return;
@@ -79,11 +101,27 @@ export default function GrowthPage() {
       <div className="bg-white rounded-xl overflow-hidden" style={CS}>
         <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid #f1f5f9", backgroundColor: "#fafbfc" }}>
           <p className="text-sm font-bold text-gray-900">Coupon Management</p>
-          <button onClick={() => setShowNew(s => !s)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-white text-xs font-bold rounded-lg"
-            style={{ backgroundColor: "#334155" }}>
-            <Plus size={12} /> New Coupon
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={exportCoupons}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+            >
+              <Download size={14} />
+              Export
+            </button>
+            <button
+              onClick={() => refetchCoupons()}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+            >
+              <RefreshCw size={14} />
+              Refresh
+            </button>
+            <button onClick={() => setShowNew(s => !s)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-white text-xs font-bold rounded-lg"
+              style={{ backgroundColor: "#334155" }}>
+              <Plus size={12} /> New Coupon
+            </button>
+          </div>
         </div>
 
         {showNew && (
