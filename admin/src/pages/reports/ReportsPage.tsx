@@ -71,31 +71,32 @@ export default function ReportsPage() {
 
   // ── Transform API data ──────────────────────────────────────────────────────
   const raw = reportsData as any;
-  const revenueByDay: any[] = raw?.revenueByDay || [];
-  const ordersByFlow: any[] = raw?.ordersByFlow || [];
-  const ordersByStatus: any[] = raw?.ordersByStatus || [];
-  const totalRevenue: number = raw?.totalRevenue || 0;
-  const totalOrders: number = raw?.totalOrders || 0;
-  const paidOrders: number = raw?.paidOrders || 0;
-  const refundedOrders: number = raw?.refundedOrders || 0;
+  // Backend may return snake_case or camelCase — handle both
+  const revenueByDay: any[] = raw?.revenueByDay || raw?.revenue_by_day || [];
+  const ordersByFlow: any[] = raw?.ordersByFlow || raw?.orders_by_flow || [];
+  const ordersByStatus: any[] = raw?.ordersByStatus || raw?.orders_by_status || [];
+  const totalRevenue: number = raw?.totalRevenue || raw?.total_revenue || 0;
+  const totalOrders: number = raw?.totalOrders || raw?.total_orders || 0;
+  const paidOrders: number = raw?.paidOrders || raw?.paid_orders || 0;
+  const refundedOrders: number = raw?.refundedOrders || raw?.refunded_orders || 0;
 
   const revenueChartData = revenueByDay.map((item: any) => ({
-    date: item._id,
-    gross: item.revenue,
-    net: Math.round(item.revenue * 0.85),
-    orders: item.count,
+    date: item._id || item.date || "",
+    gross: item.revenue || 0,
+    net: Math.round((item.revenue || 0) * 0.85),
+    orders: item.count || item.orders || 0,
   }));
 
   const orderTypeData = ordersByFlow.map((item: any) => ({
-    type: (item._id || "Unknown").replace(/_/g, " "),
-    orders: item.count,
+    type: (item._id || item.name || "Unknown").replace(/_/g, " "),
+    orders: item.count || item.value || 0,
     revenue: item.revenue || 0,
   }));
 
   const statusPie = ordersByStatus.map((item: any) => ({
-    name: item._id || "Unknown",
-    value: item.count,
-    color: STATUS_COLORS[item._id] || "#6b7280",
+    name: item._id || item.name || "Unknown",
+    value: item.count || item.value || 0,
+    color: STATUS_COLORS[item._id || item.name] || "#6b7280",
   }));
 
   // ── Audit logs ──────────────────────────────────────────────────────────────
