@@ -154,7 +154,7 @@ const normalizeVendor = (raw: any) => ({
   score: raw?.healthScore ?? raw?.priority ?? 0,
 });
 
-const ROWS_PER_PAGE = 15;
+const ROWS_PER_PAGE = 10;
 
 const OrderListPage = () => {
   const [searchParams] = useSearchParams();
@@ -547,12 +547,12 @@ const OrderListPage = () => {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px]">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th className="text-left p-4">
+      <div className="rounded-2xl border border-gray-100 shadow-sm overflow-hidden" style={{ background: 'var(--admin-surface)' }}>
+        <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px' }}>
+          <table style={{ width: '100%', minWidth: '860px', borderCollapse: 'separate', borderSpacing: 0 }}>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(248,249,255,0.98)' }}>
+              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <th style={{ padding: '12px 16px', textAlign: 'left' }}>
                   <input
                     type="checkbox"
                     checked={selectedOrders.length === filteredOrders.length && filteredOrders.length > 0}
@@ -560,13 +560,13 @@ const OrderListPage = () => {
                     className="rounded border-gray-300"
                   />
                 </th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Order</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Customer</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Vendor</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Status</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">SLA</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Amount</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Actions</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: '#a1a9bd', textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>Order</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: '#a1a9bd', textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>Customer</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: '#a1a9bd', textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>Vendor</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: '#a1a9bd', textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>Status</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: '#a1a9bd', textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>SLA</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: '#a1a9bd', textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>Amount</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: '#a1a9bd', textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -576,10 +576,12 @@ const OrderListPage = () => {
                 
                 return (
                   <tr 
-                    key={order.id} 
-                    className="border-b border-gray-50 hover:bg-gray-50 transition"
+                    key={order.id}
+                    style={{ borderBottom: '1px solid #f8fafc', transition: 'background 0.15s' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,247,255,0.95)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = '')}
                   >
-                    <td className="p-4" data-label="Select">
+                    <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
                       <input
                         type="checkbox"
                         checked={selectedOrders.includes(order.id)}
@@ -588,102 +590,69 @@ const OrderListPage = () => {
                       />
                     </td>
                     
-                    <td className="p-4" data-label="Order">
-                      <div className="flex items-center gap-2">
+                    <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <div>
-                          <p className="text-sm font-bold text-gray-900">{order.id}</p>
-                          <p className="text-xs text-gray-500">{order.type}</p>
+                          <p style={{ fontSize: '13px', fontWeight: 700, color: '#111827', margin: 0 }}>{order.id}</p>
+                          <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>{order.type}</p>
                         </div>
-                        {order.priority === 'high' && (
-                          <Zap size={12} style={{ color: ADMIN_COLORS.warning }} />
-                        )}
+                        {order.priority === 'high' && <Zap size={12} style={{ color: ADMIN_COLORS.warning, flexShrink: 0 }} />}
                       </div>
                     </td>
                     
-                    <td className="p-4" data-label="Customer">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">{order.customer.name}</p>
-                        <p className="text-xs text-gray-500">{order.customer.id}</p>
-                      </div>
+                    <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                      <p style={{ fontSize: '13px', fontWeight: 600, color: '#111827', margin: 0 }}>{order.customer.name}</p>
+                      <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>{order.customer.id}</p>
                     </td>
                     
-                    <td className="p-4" data-label="Vendor">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">{order.vendor.name}</p>
-                        <p className="text-xs text-gray-500 flex items-center gap-1">
-                          <MapPin size={10} />
-                          {order.vendor.location}
-                        </p>
-                      </div>
+                    <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                      <p style={{ fontSize: '13px', fontWeight: 600, color: '#111827', margin: 0 }}>{order.vendor.name}</p>
+                      <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <MapPin size={10} />{order.vendor.location}
+                      </p>
                     </td>
                     
-                    <td className="p-4" data-label="Status">
-                      <span 
-                        className="text-xs px-2 py-1 rounded-full font-semibold border"
-                        style={{
-                          backgroundColor: statusColors.bg,
-                          color: statusColors.text,
-                          borderColor: statusColors.border
-                        }}
-                      >
+                    <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                      <span style={{
+                        fontSize: '11px', fontWeight: 600, padding: '3px 10px',
+                        borderRadius: '999px', border: `1px solid ${statusColors.border}`,
+                        backgroundColor: statusColors.bg, color: statusColors.text,
+                        whiteSpace: 'nowrap'
+                      }}>
                         {order.status}
                       </span>
                     </td>
                     
-                    <td className="p-4" data-label="SLA">
-                      <div className="flex items-center gap-2">
-                        {order.risk === 'critical' && (
-                          <AlertTriangle size={14} style={{ color: ADMIN_COLORS.critical }} />
-                        )}
-                        <span 
-                          className="text-xs font-bold"
-                          style={{ color: order.sla === "Done" ? ADMIN_COLORS.success : riskColors.text }}
-                        >
+                    <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {order.risk === 'critical' && <AlertTriangle size={13} style={{ color: ADMIN_COLORS.critical }} />}
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: order.sla === "Done" ? ADMIN_COLORS.success : riskColors.text }}>
                           {order.sla}
                         </span>
                       </div>
                     </td>
                     
-                    <td className="p-4" data-label="Amount">
-                      <p className="text-sm font-bold text-gray-900">₹{order.amount}</p>
+                    <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#111827', margin: 0 }}>₹{order.amount}</p>
                     </td>
                     
-                    <td className="p-4" data-label="Actions">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleAction('view', order.id)}
-                          className="p-1.5 rounded-lg hover:bg-blue-50 transition"
-                          title="View Details"
-                        >
+                    <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <button onClick={() => handleAction('view', order.id)} className="p-1.5 rounded-lg hover:bg-blue-50 transition" title="View Details">
                           <Eye size={14} style={{ color: ADMIN_COLORS.info }} />
                         </button>
-                        
                         {order.canReassign && (
-                          <button
-                            onClick={() => handleAction('reassign', order.id)}
-                            className="p-1.5 rounded-lg hover:bg-blue-50 transition"
-                            title="Reassign Vendor"
-                          >
+                          <button onClick={() => handleAction('reassign', order.id)} className="p-1.5 rounded-lg hover:bg-blue-50 transition" title="Reassign Vendor">
                             <RotateCcw size={14} style={{ color: ADMIN_COLORS.info }} />
                           </button>
                         )}
-                        
                         {order.canCancel && (
-                          <button
-                            onClick={() => handleAction('cancel', order.id)}
-                            className="p-1.5 rounded-lg hover:bg-red-50 transition"
-                            title="Cancel Order"
-                          >
+                          <button onClick={() => handleAction('cancel', order.id)} className="p-1.5 rounded-lg hover:bg-red-50 transition" title="Cancel Order">
                             <XCircle size={14} style={{ color: ADMIN_COLORS.error }} />
                           </button>
                         )}
-                        
                         {order.canRefund && (
-                          <button
-                            onClick={() => handleAction('refund', order.id)}
-                            className="p-1.5 rounded-lg hover:bg-green-50 transition"
-                            title="Process Refund"
-                          >
+                          <button onClick={() => handleAction('refund', order.id)} className="p-1.5 rounded-lg hover:bg-green-50 transition" title="Process Refund">
                             <DollarSign size={14} style={{ color: ADMIN_COLORS.success }} />
                           </button>
                         )}
@@ -697,53 +666,52 @@ const OrderListPage = () => {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-white">
-            <p className="text-xs text-gray-500">
-              Showing {(currentPage - 1) * ROWS_PER_PAGE + 1}–{Math.min(currentPage * ROWS_PER_PAGE, filteredOrders.length)} of {filteredOrders.length} orders
-            </p>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition"
-              >
-                ← Prev
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
-                .reduce<(number | string)[]>((acc, p, idx, arr) => {
-                  if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) acc.push('...');
-                  acc.push(p);
-                  return acc;
-                }, [])
-                .map((p, idx) =>
-                  p === '...' ? (
-                    <span key={`ellipsis-${idx}`} className="px-2 text-xs text-gray-400">…</span>
-                  ) : (
-                    <button
-                      key={p}
-                      onClick={() => setCurrentPage(p as number)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
-                        currentPage === p
-                          ? 'border-gray-900 bg-gray-900 text-white'
-                          : 'border-gray-200 hover:bg-gray-50 text-gray-700'
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  )
-                )}
-              <button
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition"
-              >
-                Next →
-              </button>
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderTop: '1px solid #f1f5f9', background: 'rgba(248,249,255,0.6)' }}>
+          <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>
+            Showing <strong>{(currentPage - 1) * ROWS_PER_PAGE + 1}</strong>–<strong>{Math.min(currentPage * ROWS_PER_PAGE, filteredOrders.length)}</strong> of <strong>{filteredOrders.length}</strong> orders
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              style={{ padding: '5px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px', fontWeight: 600, background: 'white', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
+            >
+              ← Prev
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+              .reduce<(number | string)[]>((acc, p, idx, arr) => {
+                if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) acc.push('...');
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p, idx) =>
+                p === '...' ? (
+                  <span key={`e-${idx}`} style={{ padding: '0 4px', fontSize: '12px', color: '#9ca3af' }}>…</span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setCurrentPage(p as number)}
+                    style={{
+                      padding: '5px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                      border: currentPage === p ? '1px solid #111827' : '1px solid #e5e7eb',
+                      background: currentPage === p ? '#111827' : 'white',
+                      color: currentPage === p ? 'white' : '#374151',
+                    }}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              style={{ padding: '5px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px', fontWeight: 600, background: 'white', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
+            >
+              Next →
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Action Modals */}
