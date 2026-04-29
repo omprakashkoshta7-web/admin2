@@ -532,11 +532,12 @@ const OrderListPage = () => {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-        <div className="overflow-x-auto overflow-y-auto max-h-[60vh]">
-          <table className="w-full admin-responsive-table min-w-[900px] lg:min-w-0">
-            <thead className="sticky top-0 z-10">
-              <tr className="border-b border-gray-100 bg-gray-50">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+        <div className="overflow-x-auto">
+          <div className="overflow-y-auto max-h-[55vh]">
+            <table className="w-full min-w-[900px]">
+              <thead className="sticky top-0 z-10 bg-gray-50">
+                <tr className="border-b border-gray-100">
                 <th className="text-left p-4">
                   <input
                     type="checkbox"
@@ -679,6 +680,7 @@ const OrderListPage = () => {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 
