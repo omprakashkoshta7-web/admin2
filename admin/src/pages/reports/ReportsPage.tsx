@@ -460,6 +460,8 @@ export default function ReportsPage() {
                 {visibleLogs.map((log: any, i: number) => {
                   const actionKey = (log.action || "").toLowerCase().split("_")[0];
                   const actionColor = ACTION_COLORS[actionKey] || "#6b7280";
+                  // Show only last segment: "admin.tickets.assign" → "assign"
+                  const actionLabel = (log.action || "—").split(".").pop() || "—";
                   return (
                     <tr key={log._id || i} className="hover:bg-gray-50 transition" style={{ borderBottom: i < visibleLogs.length - 1 ? "1px solid #f8fafc" : "none" }}>
                       <td className="px-4 py-2.5 text-xs text-gray-500 whitespace-nowrap">
@@ -467,7 +469,7 @@ export default function ReportsPage() {
                       </td>
                       <td className="px-4 py-2.5">
                         <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: actionColor + "18", color: actionColor }}>
-                          {log.action || "—"}
+                          {actionLabel}
                         </span>
                       </td>
                       <td className="px-4 py-2.5">
