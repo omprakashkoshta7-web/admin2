@@ -77,14 +77,20 @@ export default function ReportsPage() {
 
   // ── Transform API data ──────────────────────────────────────────────────────
   const raw = reportsData as any;
-  // Backend may return snake_case or camelCase — handle both
+  // Backend returns: { revenueByDay: [...], ordersByStatus: [...], ordersByFlow: [...] }
   const revenueByDay: any[] = raw?.revenueByDay || raw?.revenue_by_day || [];
   const ordersByFlow: any[] = raw?.ordersByFlow || raw?.orders_by_flow || [];
   const ordersByStatus: any[] = raw?.ordersByStatus || raw?.orders_by_status || [];
-  const totalRevenue: number = raw?.totalRevenue || raw?.total_revenue || 0;
-  const totalOrders: number = raw?.totalOrders || raw?.total_orders || 0;
-  const paidOrders: number = raw?.paidOrders || raw?.paid_orders || 0;
-  const refundedOrders: number = raw?.refundedOrders || raw?.refunded_orders || 0;
+
+  // Derive summary stats from the arrays (backend doesn't return these as top-level fields)
+  // totalRevenue = sum of revenueByDay[].revenue (already filtered to paymentStatus: 'paid')
+  const totalRevenue: number = revenueByDay.reduce((sum, d) => sum + Number(d.revenue || 0), 0);
+  // totalOrders = sum of all ordersByStatus counts
+  const totalOrders: number = ordersByStatus.reduce((sum, s) => sum + Number(s.count || 0), 0);
+  // paidOrders = sum of revenueByDay[].count (those are paid orders grouped by day)
+  const paidOrders: number = revenueByDay.reduce((sum, d) => sum + Number(d.count || 0), 0);
+  // refundedOrders = count from ordersByStatus where _id === 'refunded'
+  const refundedOrders: number = Number(ordersByStatus.find((s: any) => s._id === 'refunded')?.count || 0);
 
   const revenueChartData = revenueByDay.map((item: any) => ({
     date: item._id || item.date || "",
