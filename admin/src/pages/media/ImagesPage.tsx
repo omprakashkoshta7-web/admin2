@@ -191,16 +191,7 @@ const ImagesPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-2xl p-6 border border-indigo-100">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2.5 bg-white rounded-xl shadow-sm">
-            <ImageIcon className="w-6 h-6 text-indigo-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900">Image Management</h2>
-        </div>
-        <p className="text-gray-600 ml-[52px]">Upload and manage images used across the platform</p>
-      </div>
+
 
       {/* Filters and Actions */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
