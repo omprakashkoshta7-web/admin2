@@ -420,7 +420,6 @@ export default function CategoriesPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-400 font-mono mb-2">/{c.slug}</p>
                     <p className="text-xs text-gray-600 mb-3">{c.description}</p>
                     <div className="flex items-center gap-4">
                       {(productCounts[c._id] || productCounts[c.id] || 0) > 0 && (
@@ -528,7 +527,6 @@ export default function CategoriesPage() {
               <div className="space-y-4">
                 {[
                   { label: "Category Name", key: "name", placeholder: "e.g. Document Printing", type: "text" },
-                  { label: "Slug (URL)", key: "slug", placeholder: "e.g. document-printing (auto-generated if empty)", type: "text" },
                   { label: "Description", key: "description", placeholder: "Short description of the category", type: "text" },
                   { label: "Icon (emoji)", key: "icon", placeholder: "e.g. 📄", type: "text" },
                 ].map(f => (

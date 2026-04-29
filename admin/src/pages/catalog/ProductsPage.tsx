@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Plus, Search, Edit2, Trash2, X, CheckCircle, Package, Download, RefreshCw } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Plus, Search, Edit2, Trash2, X, CheckCircle, Package, Download, RefreshCw, Upload } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { getProductCategories, getProducts, createProduct, updateProduct, deleteProduct } from "../../api/admin";
 
@@ -26,6 +26,9 @@ export default function ProductsPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saved, setSaved] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch categories and products from backend
   const { data: categoriesData, refetch: refetchCategories } = useAsync(() => getProductCategories(), null, []);
@@ -94,7 +97,7 @@ export default function ProductsPage() {
     p.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const openAdd = () => { setForm(emptyForm); setEditId(null); setShowForm(true); setSaved(false); };
+  const openAdd = () => { setForm(emptyForm); setEditId(null); setShowForm(true); setSaved(false); setImagePreview(null); };
   const openEdit = (p: Product) => {
     const selectedCat = categories.find((c: any) => c.name === p.category);
     setForm({ 
@@ -108,6 +111,43 @@ export default function ProductsPage() {
       imageUrl: p.imageUrl || "",
     });
     setEditId(p.id); setShowForm(true); setSaved(false);
+    setImagePreview(p.imageUrl || null);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert('Please select a valid image file'); return; }
+    if (file.size > 5 * 1024 * 1024) { alert('Image size must be less than 5MB'); return; }
+    try {
+      setUploadingImage(true);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('folder', 'products');
+      const token = localStorage.getItem('adminToken');
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const response = await fetch(`${API_BASE_URL}/upload/image`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData,
+      });
+      if (!response.ok) throw new Error('Failed to upload image');
+      const data = await response.json();
+      const imageUrl = data.data?.url || data.url;
+      if (imageUrl) {
+        const fullUrl = imageUrl.startsWith('http') ? imageUrl : `${import.meta.env.VITE_PRODUCT_SERVICE_URL || 'http://localhost:4003'}${imageUrl}`;
+        setForm(prev => ({ ...prev, imageUrl: fullUrl }));
+      } else throw new Error('No image URL returned');
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      alert('Failed to upload image. Please try again.');
+      setImagePreview(null);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const save = async () => {
@@ -403,17 +443,29 @@ export default function ProductsPage() {
                   </div>
                 ))}
                 <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Image URL</label>
-                  <input type="text" placeholder="https://example.com/image.jpg"
-                    value={form.imageUrl}
-                    onChange={e => setForm(p => ({ ...p, imageUrl: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none" />
-                  {form.imageUrl && (
-                    <div className="mt-2 rounded-xl overflow-hidden border border-gray-100" style={{ height: '120px' }}>
-                      <img src={form.imageUrl} alt="Preview" className="w-full h-full object-cover"
-                        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Product Image</label>
+                  {imagePreview && (
+                    <div className="mb-2 relative rounded-xl overflow-hidden border border-gray-100" style={{ height: '120px' }}>
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => { setImagePreview(null); setForm(p => ({ ...p, imageUrl: '' })); }}
+                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                      >
+                        <X size={12} />
+                      </button>
                     </div>
                   )}
+                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingImage}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-gray-200 text-sm font-semibold text-gray-600 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-600 transition disabled:opacity-50"
+                  >
+                    <Upload size={14} />
+                    {uploadingImage ? 'Uploading...' : (imagePreview ? 'Change Image' : 'Upload Image')}
+                  </button>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Category</label>
