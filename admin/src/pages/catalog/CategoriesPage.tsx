@@ -131,8 +131,8 @@ export default function CategoriesPage() {
       formData.append('image', file);
       formData.append('folder', 'categories');
 
-      // Get auth token
-      const token = localStorage.getItem('adminToken');
+      // Get auth token — same key used by apiClient
+      const token = localStorage.getItem('admin_token');
       
       // Upload via gateway to product service
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';

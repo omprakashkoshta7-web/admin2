@@ -127,7 +127,7 @@ export default function ProductsPage() {
       const formData = new FormData();
       formData.append('image', file);
       formData.append('folder', 'products');
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem('admin_token');
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
       const response = await fetch(`${API_BASE_URL}/upload/image`, {
         method: 'POST',
