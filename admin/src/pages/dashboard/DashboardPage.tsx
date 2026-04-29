@@ -4,7 +4,7 @@ import {
   ShoppingCart, DollarSign, AlertTriangle, HeadphonesIcon,
   CheckCircle, XCircle, RefreshCw, Users, Store,
   ChevronRight, Zap,
-  Shield, Bell, Eye, Pause, Play
+  Shield, Bell, Eye
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip,
@@ -28,7 +28,6 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [killSwitchModal, setKillSwitchModal] = useState<string | null>(null);
   const { data: dashboardData, refetch: refetchDashboard } = useAsync<AdminDashboardResponse>(getAdminDashboard, null, []);
   const { data: reportsData } = useAsync<AdminReportsResponse | null>(
     async () => {
@@ -109,14 +108,6 @@ export default function DashboardPage() {
     activeCustomers: actualActiveCustomers,
     restrictedCustomers: dashboardData?.refundCount ?? 0,
   };
-
-  // Get real data from backend
-  const killSwitches = controlData?.feature_flags?.map(flag => ({
-    id: flag.id,
-    label: flag.name,
-    active: flag.enabled,
-    critical: flag.id === 'orders' || flag.id === 'payments'
-  })) || [];
 
   // Fetch real alerts from backend
   const { data: alertsData } = useAsync(() => getAdminReports({ from: '2024-01-01', to: '2024-01-31' }), { alerts: [] }, []);
@@ -227,16 +218,6 @@ export default function DashboardPage() {
     setRefreshing(true);
     refetchDashboard();
     setTimeout(() => setRefreshing(false), 1000);
-  };
-
-  const handleKillSwitch = (switchId: string) => {
-    setKillSwitchModal(switchId);
-  };
-
-  const confirmKillSwitch = (switchId: string) => {
-    // In real implementation, this would call the kill switch API
-    console.log(`Kill switch activated: ${switchId}`);
-    setKillSwitchModal(null);
   };
 
   return (
@@ -638,66 +619,6 @@ export default function DashboardPage() {
       </div>
 
       {/* Kill Switch Confirmation Modal */}
-      {killSwitchModal && (
-        <div className="admin-modal-overlay">
-          <div className="bg-white rounded-2xl p-4 sm:p-6 w-full max-w-md border-2 border-red-200">
-            <div className="flex items-center gap-3 mb-4">
-              <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{ backgroundColor: ADMIN_COLORS.criticalBg }}
-              >
-                <Shield size={20} style={{ color: ADMIN_COLORS.critical }} />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">Emergency Kill Switch</h3>
-                <p className="text-sm text-gray-500">Critical system control</p>
-              </div>
-            </div>
-            
-            <div 
-              className="p-4 rounded-xl border mb-4"
-              style={{ 
-                backgroundColor: ADMIN_COLORS.criticalBg,
-                borderColor: ADMIN_COLORS.critical
-              }}
-            >
-              <p className="text-sm font-bold mb-2" style={{ color: ADMIN_COLORS.critical }}>
-                ⚠️ WARNING: This action will immediately halt operations
-              </p>
-              <p className="text-xs" style={{ color: ADMIN_COLORS.critical }}>
-                {killSwitchModal === "orders" && "All new customer orders will be blocked"}
-                {killSwitchModal === "payments" && "All payment processing will be suspended"}
-                {killSwitchModal === "mumbai" && "All Mumbai operations will be paused"}
-                {killSwitchModal === "delhi" && "All Delhi operations will be paused"}
-                {killSwitchModal === "notifications" && "All system notifications will be disabled"}
-              </p>
-            </div>
-            
-            <p className="text-gray-600 mb-6 text-sm">
-              This action requires dual authorization and will be logged in the audit trail. 
-              Are you sure you want to proceed?
-            </p>
-            
-            <div className="flex gap-3">
-              <button 
-                onClick={() => setKillSwitchModal(null)}
-                className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={() => confirmKillSwitch(killSwitchModal)}
-                className="flex-1 px-4 py-2 text-white font-bold rounded-xl transition"
-                style={{ backgroundColor: ADMIN_COLORS.critical }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = ADMIN_COLORS.errorLight}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ADMIN_COLORS.critical}
-              >
-                Confirm Kill Switch
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );
