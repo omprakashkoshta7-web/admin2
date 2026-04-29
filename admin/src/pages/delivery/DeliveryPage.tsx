@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from "react";
-import { Truck, Plus, MapPin, X, CheckCircle, Edit, Trash2, Power, DollarSign, TrendingUp, Activity, Search, Filter, Download } from "lucide-react";
+import { Truck, Plus, MapPin, X, CheckCircle, Edit, Trash2, Power, DollarSign, TrendingUp, Activity, Search, Filter, Download, RefreshCw } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { 
   getAdminDeliveryPartners, 
@@ -267,7 +267,7 @@ export default function DeliveryPage() {
             onClick={() => refetch()}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
           >
-            <TrendingUp size={14} className="rotate-0" />
+            <RefreshCw size={14} />
             Refresh
           </button>
           <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2.5 text-white text-sm font-bold rounded-xl transition" style={{ backgroundColor: ADMIN_COLORS.primary }}>

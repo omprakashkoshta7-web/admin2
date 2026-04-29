@@ -132,7 +132,7 @@ export default function RefundsPage() {
           <Download size={14} /> Export
         </button>
         <button onClick={() => { refetch(); refetchRefunds(); }} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold">
-          <RefreshCw size={14} /> Refresh
+          <RefreshCw size={14} className={loadingRefunds ? "animate-spin" : ""} /> {loadingRefunds ? "Refreshing..." : "Refresh"}
         </button>
       </div>
 

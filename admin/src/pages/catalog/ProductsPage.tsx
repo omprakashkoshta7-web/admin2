@@ -32,7 +32,7 @@ export default function ProductsPage() {
 
   // Fetch categories and products from backend
   const { data: categoriesData, refetch: refetchCategories } = useAsync(() => getProductCategories(), null, []);
-  const { data: productsData, refetch: refetchProducts } = useAsync(() => getProducts({ limit: 100 }), null, []);
+  const { data: productsData, loading: productsLoading, refetch: refetchProducts } = useAsync(() => getProducts({ limit: 100 }), null, []);
   
   // Extract categories from backend data (API returns array directly)
   const categoriesArray = Array.isArray(categoriesData) ? categoriesData : [];
@@ -317,8 +317,8 @@ export default function ProductsPage() {
           onClick={() => refetchProducts()}
           className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
         >
-          <RefreshCw size={14} />
-          Refresh
+          <RefreshCw size={14} className={productsLoading ? "animate-spin" : ""} />
+          {productsLoading ? "Refreshing..." : "Refresh"}
         </button>
       </div>
 

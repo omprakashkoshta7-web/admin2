@@ -1,4 +1,4 @@
-import { Download, RotateCcw, Store, Wallet } from "lucide-react";
+import { Download, RotateCcw, Store, Wallet, RefreshCw } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { getAdminReports, getAdminOrders } from "../../api/admin";
 import { ADMIN_COLORS } from "../../utils/colors";
@@ -65,8 +65,8 @@ export default function WalletOversightPage() {
           onClick={() => { refetchWallet(); refetchOrders(); }}
           className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
         >
-          <RotateCcw size={14} />
-          Refresh
+          <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+          {loading ? "Refreshing..." : "Refresh"}
         </button>
       </div>
       <div className="grid grid-cols-3 gap-4" style={{ marginBottom: "1.5rem" }}>

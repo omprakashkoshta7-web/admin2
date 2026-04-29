@@ -32,7 +32,7 @@ export default function CategoriesPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Fetch categories from backend
-  const { data: categoriesData, refetch: refetchCategories } = useAsync<AdminCategoriesResponse>(
+  const { data: categoriesData, loading: categoriesLoading, refetch: refetchCategories } = useAsync<AdminCategoriesResponse>(
     () => getProductCategories(),
     null,
     []
@@ -356,8 +356,8 @@ export default function CategoriesPage() {
             onClick={() => refetchCategories()}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
           >
-            <RefreshCw size={14} />
-            Refresh
+            <RefreshCw size={14} className={categoriesLoading ? "animate-spin" : ""} />
+            {categoriesLoading ? "Refreshing..." : "Refresh"}
           </button>
           <button onClick={openAdd}
             className="flex items-center gap-1.5 px-4 py-2.5 text-white text-sm font-bold rounded-xl transition hover:opacity-90"

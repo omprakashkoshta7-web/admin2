@@ -12,7 +12,7 @@ export default function GrowthPage() {
   const [couponSaving, setCouponSaving] = useState(false);
 
   // Fetch real coupons from backend
-  const { data: couponsData, refetch: refetchCoupons } = useAsync(() => getCoupons({ limit: 50 }), {}, []);
+  const { data: couponsData, loading: couponsLoading, refetch: refetchCoupons } = useAsync(() => getCoupons({ limit: 50 }), {}, []);
 
   // exportCoupons uses coupons array
 
@@ -133,8 +133,8 @@ export default function GrowthPage() {
               onClick={() => refetchCoupons()}
               className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
             >
-              <RefreshCw size={14} />
-              Refresh
+              <RefreshCw size={14} className={couponsLoading ? "animate-spin" : ""} />
+              {couponsLoading ? "Refreshing..." : "Refresh"}
             </button>
             <button onClick={() => setShowNew(s => !s)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-white text-xs font-bold rounded-lg"
