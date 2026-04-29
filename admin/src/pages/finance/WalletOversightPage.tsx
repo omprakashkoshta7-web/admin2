@@ -81,8 +81,12 @@ export default function WalletOversightPage() {
                 {paidOrdersList.map((order: any) => (
                   <tr key={order._id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-3 px-4 text-gray-900 font-mono text-xs">{order._id}</td>
-                    <td className="py-3 px-4 text-gray-700">{order.userId || "N/A"}</td>
-                    <td className="py-3 px-4 text-gray-700">{order.vendorId || "N/A"}</td>
+                    <td className="py-3 px-4 text-gray-700">
+                      {order.customerName || order.userName || order.user?.name || (order.userId ? <span className="font-mono text-xs text-gray-400">{String(order.userId).slice(-8)}</span> : <span className="text-gray-400 italic text-xs">No Name</span>)}
+                    </td>
+                    <td className="py-3 px-4 text-gray-700">
+                      {order.vendorName || order.vendor?.name || order.vendor?.businessName || (order.vendorId ? <span className="font-mono text-xs text-gray-400">{String(order.vendorId).slice(-8)}</span> : <span className="text-gray-400 italic text-xs">No Vendor</span>)}
+                    </td>
                     <td className="py-3 px-4 text-right text-gray-900 font-bold">₹{Number(order.total || 0).toLocaleString()}</td>
                     <td className="py-3 px-4">
                       <span className="inline-block px-2 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: ADMIN_COLORS.successBg, color: ADMIN_COLORS.success }}>
