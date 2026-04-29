@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard, ClipboardList, Clock, Store, Users, DollarSign,
   RotateCcw, BookOpen, TrendingUp, HeadphonesIcon, BarChart2, Settings,
-  Truck, LogOut, Bell, ChevronDown, Shield, Wallet, MonitorSmartphone,
+  Truck, LogOut, Bell, ChevronDown, Shield, Wallet,
   Search, Zap, Package, Layers, Tag, User, Lock, X, Image as ImageIcon
 } from "lucide-react";
 import { logoutFirebase } from "../../services/firebase-auth";
@@ -59,7 +59,6 @@ const navGroups = [
       { to: "/reports", icon: BarChart2, label: "Reports" },
       { to: "/failures", icon: Zap, label: "Failure Handling" },
       { to: "/platform", icon: Settings, label: "Platform" },
-      { to: "/sessions", icon: MonitorSmartphone, label: "Sessions" },
     ]
   },
 ];
@@ -243,18 +242,42 @@ export default function AdminLayout() {
                       {notifications.length ? (
                         <div className="max-h-96 overflow-y-auto p-2">
                           {notifications.map((notification) => (
-                            <div key={notification._id} className="rounded-xl px-3 py-3 hover:bg-slate-50 transition">
+                            <button
+                              key={notification._id}
+                              onClick={() => {
+                                setShowNotifications(false);
+                                // Navigate based on category
+                                const categoryRoutes: Record<string, string> = {
+                                  order: '/orders',
+                                  orders: '/orders',
+                                  payment: '/finance',
+                                  finance: '/finance',
+                                  refund: '/refunds',
+                                  vendor: '/vendors',
+                                  customer: '/customers',
+                                  support: '/support',
+                                  delivery: '/delivery',
+                                  sla: '/sla',
+                                };
+                                const route = categoryRoutes[notification.category?.toLowerCase()] || '/dashboard';
+                                navigate(route);
+                              }}
+                              className="w-full text-left rounded-xl px-3 py-3 hover:bg-slate-50 active:bg-slate-100 transition cursor-pointer group"
+                            >
                               <div className="flex items-start justify-between gap-3">
-                                <div className="min-w-0">
-                                  <p className="text-sm font-semibold text-slate-900">{notification.title}</p>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-semibold text-slate-900 group-hover:text-indigo-700 transition">{notification.title}</p>
                                   <p className="mt-1 text-xs leading-5 text-slate-600">{notification.message}</p>
                                   <p className="mt-2 text-[11px] uppercase tracking-[0.18em] text-slate-400">
                                     {notification.category} • {formatTimestamp(notification.createdAt)}
                                   </p>
                                 </div>
-                                {!notification.isRead && <span className="mt-1 h-2.5 w-2.5 rounded-full bg-rose-500" />}
+                                <div className="flex flex-col items-center gap-1.5 mt-0.5">
+                                  {!notification.isRead && <span className="h-2.5 w-2.5 rounded-full bg-rose-500 flex-shrink-0" />}
+                                  <span className="text-slate-300 group-hover:text-indigo-400 transition text-xs">→</span>
+                                </div>
                               </div>
-                            </div>
+                            </button>
                           ))}
                         </div>
                       ) : (
