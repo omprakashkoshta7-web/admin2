@@ -1,4 +1,4 @@
-import { DollarSign, Info, Package, Percent, TrendingUp } from "lucide-react";
+import { DollarSign, Package, Percent, TrendingUp } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { ADMIN_COLORS } from "../../utils/colors";
 import LoadingState from "../../components/ui/LoadingState";
@@ -45,19 +45,6 @@ export default function PricingPage() {
 
   return (
     <div className="admin-content-wrapper">
-      <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900" style={{ marginBottom: "1.5rem" }}>
-        <div className="flex items-start gap-3">
-          <Info size={18} className="mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="font-bold">Backend-aligned pricing view</p>
-            <p className="mt-1 text-blue-800">
-              Backend currently exposes product prices, but does not expose dedicated admin pricing update endpoints.
-              This screen is read-only and reflects live product pricing data from the catalog APIs.
-            </p>
-          </div>
-        </div>
-      </div>
-
       <div className="admin-stats-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)", marginBottom: "1.5rem" }}>
         <AdminMetricCard index={0} label="Products Priced" value={rows.length.toString()} accent="#334155" icon={Package} />
         <AdminMetricCard label="Avg Platform Gap" value={`${avgPlatformFee}%`} accent={ADMIN_COLORS.success} accentBg={ADMIN_COLORS.successBg} icon={Percent} />
