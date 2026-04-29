@@ -4,6 +4,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import AdminLayout from './components/layout/AdminLayout';
 import AdminLogin from './components/AdminLogin';
 import SessionPage from './pages/auth/SessionPage';
+import ProfilePage from './pages/auth/ProfilePage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import OrderListPage from './pages/orders/OrderListPage';
 import OrderDetailPage from './pages/orders/OrderDetailPage';
@@ -109,6 +110,7 @@ const App = () => {
             <Route path="ledger" element={<LedgerPage />} />
             <Route path="wallet" element={<WalletOversightPage />} />
             <Route path="sessions" element={<SessionPage />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route path="growth" element={<GrowthPage />} />
             <Route path="support" element={<TicketDashboardPage />} />
             <Route path="support/:ticketId" element={<TicketDetailPage />} />

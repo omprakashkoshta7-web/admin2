@@ -74,6 +74,7 @@ const pageTitles: Record<string, string> = {
   "/ledger": "Ledger",
   "/wallet": "Wallet Oversight",
   "/sessions": "Session Control",
+  "/profile": "My Profile",
   "/growth": "Growth & Coupons",
   "/support": "Support",
   "/reports": "Reports",
@@ -347,7 +348,7 @@ export default function AdminLayout() {
                 <div className="relative">
                   <button 
                     className="admin-user-chip hidden md:flex"
-                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    onClick={() => navigate('/profile')}
                   >
                     <div className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-black text-white overflow-hidden" style={{ background: 'radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 24%), linear-gradient(180deg, #1a2332 0%, #141c28 100%)' }}>
                       A
