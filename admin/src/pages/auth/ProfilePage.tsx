@@ -7,6 +7,48 @@ import { ADMIN_COLORS } from "../../utils/colors";
 import { getStoredAdminUser } from "../../api/auth";
 import { request } from "../../api/apiClient";
 
+// PasswordField component defined outside to prevent re-creation on each render
+const PasswordField = ({
+  label, value, show, onToggle, onChange, placeholder
+}: {
+  label: string; value: string; show: boolean;
+  onToggle: () => void; onChange: (v: string) => void; placeholder: string;
+}) => (
+  <div>
+    <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">{label}</label>
+    <div className="relative">
+      <input
+        type={show ? "text" : "password"}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoComplete="new-password"
+        className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition"
+      />
+      <button
+        type="button"
+        onClick={onToggle}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+      >
+        {show ? <EyeOff size={15} /> : <Eye size={15} />}
+      </button>
+    </div>
+  </div>
+);
+
+// InfoRow component defined outside
+const InfoRow = ({ icon: Icon, label, value }: { icon: any; label: string; value?: string }) => (
+  <div className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0">
+    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-slate-50">
+      <Icon size={14} className="text-slate-500" />
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{label}</p>
+      <p className="text-sm font-semibold text-gray-900 mt-0.5 truncate">{value || "—"}</p>
+    </div>
+  </div>
+);
+
 export default function ProfilePage() {
   const user = getStoredAdminUser();
 
@@ -128,47 +170,7 @@ export default function ProfilePage() {
   };
 
   const formatDate = (d?: string) =>
-    d ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "â€”";
-
-  const InfoRow = ({ icon: Icon, label, value }: { icon: any; label: string; value?: string }) => (
-    <div className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0">
-      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-slate-50">
-        <Icon size={14} className="text-slate-500" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{label}</p>
-        <p className="text-sm font-semibold text-gray-900 mt-0.5 truncate">{value || "â€”"}</p>
-      </div>
-    </div>
-  );
-
-  const PasswordField = ({
-    label, value, show, onToggle, onChange, placeholder
-  }: {
-    label: string; value: string; show: boolean;
-    onToggle: () => void; onChange: (v: string) => void; placeholder: string;
-  }) => (
-    <div>
-      <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">{label}</label>
-      <div className="relative">
-        <input
-          type={show ? "text" : "password"}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          autoComplete="off"
-          className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition"
-        />
-        <button
-          type="button"
-          onClick={onToggle}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
-        >
-          {show ? <EyeOff size={15} /> : <Eye size={15} />}
-        </button>
-      </div>
-    </div>
-  );
+    d ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 
   // Use latest name from local state if updated
   const displayName = profileForm.name || user?.name || "Super Admin";
