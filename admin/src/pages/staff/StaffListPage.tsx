@@ -106,6 +106,7 @@ export default function StaffListPage() {
     name: "", 
     email: "", 
     phone: "", 
+    password: "",
     role: "" as Role | "",
     team: "ops",
     permissions: [] as string[],
@@ -139,7 +140,8 @@ export default function StaffListPage() {
       const res = await createAdminStaff({ 
         name: form.name, 
         email: form.email, 
-        phone: form.phone, 
+        phone: form.phone,
+        password: form.password, 
         role: normalizedRole,
         team: form.team,
         permissions: form.permissions,
@@ -166,7 +168,7 @@ export default function StaffListPage() {
         setShowAdd(false);
         setAdded(false);
         setError(null);
-        setForm({ name: "", email: "", phone: "", role: "", team: "ops", permissions: [], scopes: [] });
+        setForm({ name: "", email: "", phone: "", password: "", role: "", team: "ops", permissions: [], scopes: [] });
         try { refetch(); } catch (e) { console.warn('Refetch staff failed', e); }
       }, 900);
     } catch (err: any) {
@@ -347,6 +349,13 @@ export default function StaffListPage() {
           >
             <RefreshCw size={14} className={staffLoading ? "animate-spin" : ""} />
             {staffLoading ? "Refreshing..." : "Refresh"}
+          </button>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="flex items-center gap-2 px-4 py-2.5 text-white text-sm font-bold rounded-xl transition"
+            style={{ backgroundColor: ADMIN_COLORS.primary }}
+          >
+            <Users size={15} /> Add Staff
           </button>
         </div>
       </div>
@@ -624,15 +633,20 @@ export default function StaffListPage() {
 
                 <div className="space-y-4 mb-5">
                   {[
-                    { label: "Full Name", key: "name", type: "text" }, 
-                    { label: "Email", key: "email", type: "email" },
-                    { label: "Phone", key: "phone", type: "tel" }
+                    { label: "Full Name", key: "name", type: "text", placeholder: "Enter full name" }, 
+                    { label: "Email", key: "email", type: "email", placeholder: "staff@speedcopy.com" },
+                    { label: "Phone", key: "phone", type: "tel", placeholder: "+91 9876543210" },
+                    { label: "Password", key: "password", type: "password", placeholder: "Minimum 8 characters" }
                   ].map(f => (
                     <div key={f.key}>
                       <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">{f.label}</label>
-                      <input type={f.type} value={form[f.key as keyof typeof form]}
+                      <input 
+                        type={f.type} 
+                        value={form[f.key as keyof typeof form]}
                         onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-gray-900 transition" />
+                        placeholder={f.placeholder}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-gray-900 transition" 
+                      />
                     </div>
                   ))}
                   <div>
@@ -712,7 +726,7 @@ export default function StaffListPage() {
                     className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">
                     Cancel
                   </button>
-                  <button onClick={add} disabled={!form.name || !form.email || !form.phone || !form.role}
+                  <button onClick={add} disabled={!form.name || !form.email || !form.phone || !form.password || !form.role}
                     className="flex-1 py-2.5 text-white text-sm font-bold rounded-xl disabled:opacity-40 transition"
                     style={{ backgroundColor: ADMIN_COLORS.primary }}>
                     Add Staff

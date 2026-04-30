@@ -215,7 +215,8 @@ export const getAdminStaff = async (params?: {
 export const createAdminStaff = async (data: { 
   name: string; 
   email: string; 
-  phone?: string; 
+  phone?: string;
+  password: string;
   role?: string;
   team?: string;
   permissions?: string[];
@@ -227,6 +228,7 @@ export const createAdminStaff = async (data: {
       name: data.name,
       email: data.email,
       phone: data.phone || '',
+      password: data.password,
       role: data.role || 'staff',
       team: data.team || 'ops',
       permissions: data.permissions || [],
