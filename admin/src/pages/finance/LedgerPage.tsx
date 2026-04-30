@@ -105,7 +105,7 @@ export default function LedgerPage() {
               <option value="all">All Actions</option>
               {uniqueActions.map((action: any) => {
                 const actionStr = String(action);
-                const displayName = actionStr.split('.').slice(-2).join('.').replace(/_/g, ' ');
+                const displayName = actionStr.split('.').slice(-2).join(' ').replace(/_/g, ' ');
                 return (
                   <option key={actionStr} value={actionStr}>{displayName}</option>
                 );
@@ -140,7 +140,7 @@ export default function LedgerPage() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <p className="text-xs text-gray-600 font-mono">{(log.action || 'N/A').split('.').slice(-2).join('.').replace(/_/g, ' ')}</p>
+                      <p className="text-xs text-gray-600 font-mono">{(log.action || 'N/A').split('.').slice(-2).join(' ').replace(/_/g, ' ')}</p>
                     </td>
                     <td className="p-4">
                       <p className="text-sm font-semibold text-gray-900">{log.targetType || '—'}</p>
