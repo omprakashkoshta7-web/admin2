@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Search, Eye, AlertTriangle,
-  XCircle, RefreshCw, Download,
+  XCircle, Download,
   RotateCcw, DollarSign, MapPin,
   Zap, ChevronDown, Package,
   Clock
@@ -185,7 +185,7 @@ const OrderListPage = () => {
   }, [searchParams]);
 
   // Fetch orders from backend
-  const { data: ordersData, loading: ordersLoading, refetch: refetchOrders } = useAsync(
+  const { data: ordersData, refetch: refetchOrders } = useAsync(
     () => getAdminOrders({ page: 1, limit: 50 }), 
     { orders: [] }, 
     []
