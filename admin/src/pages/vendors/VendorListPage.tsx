@@ -336,8 +336,8 @@ export default function VendorListPage() {
 
   const handleCreateVendor = async () => {
     try {
-      if (!newVendorForm.name || !newVendorForm.email || !newVendorForm.phone) {
-        setActionError('Please fill in all required fields');
+      if (!newVendorForm.name || !newVendorForm.email || !newVendorForm.phone || !newVendorForm.password) {
+        setActionError('Please fill in all required fields (name, email, phone, password)');
         return;
       }
       setLoading(true);
@@ -444,6 +444,13 @@ export default function VendorListPage() {
           >
             <RefreshCw size={14} className={vendorsLoading ? "animate-spin" : ""} />
             {vendorsLoading ? "Refreshing..." : "Refresh"}
+          </button>
+          <button
+            onClick={() => setActionModal({ type: 'create', vendorId: null })}
+            className="flex items-center gap-2 px-4 py-2.5 text-white text-sm font-bold rounded-xl transition"
+            style={{ backgroundColor: ADMIN_COLORS.primary }}
+          >
+            <Store size={15} /> Create Vendor
           </button>
         </div>
       </div>
@@ -1066,12 +1073,12 @@ export default function VendorListPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-600 mb-2">Password</label>
+                      <label className="block text-xs font-bold text-gray-600 mb-2">Password *</label>
                       <input
                         type="password"
                         value={newVendorForm.password}
                         onChange={(e) => setNewVendorForm({ ...newVendorForm, password: e.target.value })}
-                        placeholder="Leave blank for auto-generated"
+                        placeholder="Minimum 8 characters"
                         className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900"
                       />
                     </div>

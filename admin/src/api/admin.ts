@@ -95,9 +95,9 @@ export const createAdminVendor = async (data: {
   name: string;
   email: string;
   phone: string;
+  password: string;
   location?: string;
   tier?: 'gold' | 'silver' | 'bronze';
-  password?: string;
 }) => {
   return await request('/admin/vendors', {
     method: 'POST',
