@@ -373,10 +373,11 @@ const OrderListPage = () => {
           </button>
           <button
             onClick={() => refetchOrders()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+            disabled={ordersLoading}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold disabled:opacity-60"
           >
             <RefreshCw size={14} className={ordersLoading ? "animate-spin" : ""} />
-            Refresh
+            {ordersLoading ? "Refreshing..." : "Refresh"}
           </button>
         </div>
       </div>

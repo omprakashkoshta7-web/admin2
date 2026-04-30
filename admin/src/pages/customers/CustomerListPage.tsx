@@ -309,10 +309,11 @@ const CustomerListPage = () => {
         </button>
         <button
           onClick={() => refetchCustomers()}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+          disabled={customersLoading}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold disabled:opacity-60"
         >
           <RefreshCw size={14} className={customersLoading ? "animate-spin" : ""} />
-          {customersLoading ? "Loading..." : "Refresh"}
+          {customersLoading ? "Refreshing..." : "Refresh"}
         </button>
       </div>
 
@@ -420,11 +421,11 @@ const CustomerListPage = () => {
       </div>
       {/* Customers Table */}
       <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full admin-responsive-table min-w-[1000px] lg:min-w-0">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left p-4 w-10">
+        <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th className="p-4 sticky top-0 bg-gray-50 z-10">
                   <input
                     type="checkbox"
                     checked={selectedCustomers.length === filteredCustomers.length && filteredCustomers.length > 0}
@@ -432,13 +433,13 @@ const CustomerListPage = () => {
                     className="rounded border-gray-300"
                   />
                 </th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[200px]">Customer</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[100px]">Status</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[80px]">Orders</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[130px]">Lifetime Value</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[110px]">Risk Score</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[100px]">Wallet</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[100px]">Actions</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[200px] sticky top-0 bg-gray-50 z-10">Customer</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[100px] sticky top-0 bg-gray-50 z-10">Status</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[80px] sticky top-0 bg-gray-50 z-10">Orders</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[130px] sticky top-0 bg-gray-50 z-10">Lifetime Value</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[110px] sticky top-0 bg-gray-50 z-10">Risk Score</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[100px] sticky top-0 bg-gray-50 z-10">Wallet</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[100px] sticky top-0 bg-gray-50 z-10">Actions</th>
               </tr>
             </thead>
             <tbody>

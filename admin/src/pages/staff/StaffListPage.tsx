@@ -342,10 +342,11 @@ export default function StaffListPage() {
           </button>
           <button
             onClick={() => refetch()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+            disabled={staffLoading}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold disabled:opacity-60"
           >
             <RefreshCw size={14} className={staffLoading ? "animate-spin" : ""} />
-            Refresh
+            {staffLoading ? "Refreshing..." : "Refresh"}
           </button>
         </div>
       </div>
@@ -495,7 +496,7 @@ export default function StaffListPage() {
           filteredMerged.map(s => {
             const roleColors = getRoleColor(s.role as any);
             return (
-              <div key={s.id} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
+              <div key={s.id} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col min-h-[200px]">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <input
@@ -527,7 +528,7 @@ export default function StaffListPage() {
                 <p className="text-xs text-gray-400 mb-1">{s.email}</p>
                 <p className="text-xs text-gray-400 mb-3">{(s as any).phone || 'Not provided'}</p>
                 
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
                   <div className="text-xs text-gray-500">
                     <p>Created: {s.createdAt}</p>
                     <p>Last active: {(s as any).lastActive || s.lastLogin || 'Never'}</p>

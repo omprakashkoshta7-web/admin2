@@ -230,6 +230,7 @@ export default function GrowthPage() {
           </div>
         </div>
 
+        <div className="overflow-x-auto max-h-[480px] overflow-y-auto">
         <table className="w-full admin-responsive-table min-w-[800px] lg:min-w-0">
           <thead>
             <tr style={{ borderBottom: "1px solid #f1f5f9" }}>
@@ -314,13 +315,18 @@ export default function GrowthPage() {
               })
             ) : (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">
-                  No coupons yet. Click "+ New Coupon" to create one.
+                <td colSpan={6} className="px-4 py-12">
+                  <div className="flex flex-col items-center justify-center gap-2 text-center">
+                    <p className="text-sm font-semibold text-gray-500">
+                      No coupons yet. Click "+ New Coupon" to create one.
+                    </p>
+                  </div>
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Create / Edit Modal */}

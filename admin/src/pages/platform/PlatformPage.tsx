@@ -248,10 +248,11 @@ export default function PlatformPage() {
       <div className="flex items-center justify-end">
         <button
           onClick={() => refetch()}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+          disabled={controlLoading}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold disabled:opacity-60"
         >
           <RefreshCw size={14} className={controlLoading ? "animate-spin" : ""} />
-          {controlLoading ? "Loading..." : "Refresh"}
+          {controlLoading ? "Refreshing..." : "Refresh"}
         </button>
       </div>
 
@@ -400,7 +401,7 @@ export default function PlatformPage() {
         </div>
         
         {flags.length > 0 ? (
-          <div className="space-y-2">
+          <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
             {flags.map(f => (
               <div key={f.id} className="flex items-center justify-between p-4 rounded-xl border border-gray-200 hover:border-gray-300 transition">
                 <div className="flex-1">

@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ClipboardList, Clock, Store, Users, DollarSign,
   RotateCcw, BookOpen, TrendingUp, HeadphonesIcon, BarChart2, Settings,
   Truck, LogOut, Bell, ChevronDown, Shield, Wallet,
-  Search, Package, Layers, Tag, X, Image as ImageIcon
+  Search, Package, Layers, Tag, X
 } from "lucide-react";
 import { logoutFirebase } from "../../services/firebase-auth";
 import { notificationService, type PortalNotification } from "../../services/notification.service";
@@ -45,7 +45,6 @@ const navGroups = [
       { to: "/products", icon: Package, label: "Products" },
       { to: "/categories", icon: Layers, label: "Categories" },
       { to: "/pricing", icon: Tag, label: "Pricing" },
-      { to: "/images", icon: ImageIcon, label: "Images" },
     ]
   },
   {

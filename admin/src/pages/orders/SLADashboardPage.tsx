@@ -156,8 +156,13 @@ export default function SLADashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={refetchAll} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold">
-            <RefreshCw size={14} className={risksLoading ? "animate-spin" : ""} /> Refresh
+          <button 
+            onClick={refetchAll} 
+            disabled={risksLoading}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold disabled:opacity-60"
+          >
+            <RefreshCw size={14} className={risksLoading ? "animate-spin" : ""} /> 
+            {risksLoading ? "Refreshing..." : "Refresh"}
           </button>
         </div>
         <button onClick={() => setPolicyModal(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-white font-bold transition" style={{ backgroundColor: ADMIN_COLORS.primary }}>

@@ -360,7 +360,8 @@ export default function CategoriesPage() {
           </button>
           <button
             onClick={() => refetchCategories()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+            disabled={categoriesLoading}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold disabled:opacity-60"
           >
             <RefreshCw size={14} className={categoriesLoading ? "animate-spin" : ""} />
             {categoriesLoading ? "Refreshing..." : "Refresh"}
@@ -400,8 +401,8 @@ export default function CategoriesPage() {
       ) : cats.length > 0 ? (
         <div className="grid grid-cols-2 gap-4">
           {cats.map((c: any) => (
-            <div key={c.id} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition">
-              <div className="p-5">
+            <div key={c.id} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col">
+              <div className="p-5 flex-1">
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden"
                     style={{ backgroundColor: c.active ? ADMIN_COLORS.gray100 : ADMIN_COLORS.gray200 }}>
@@ -413,20 +414,20 @@ export default function CategoriesPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="text-base font-bold text-gray-900">{c.name}</p>
+                      <p className="text-base font-bold text-gray-900 truncate">{c.name}</p>
                       {c.active ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0"
                           style={{ backgroundColor: ADMIN_COLORS.successBg, color: ADMIN_COLORS.success }}>
                           Active
                         </span>
                       ) : (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0"
                           style={{ backgroundColor: ADMIN_COLORS.gray200, color: ADMIN_COLORS.gray500 }}>
                           Inactive
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-600 mb-3">{c.description}</p>
+                    <p className="text-xs text-gray-600 mb-3 line-clamp-2">{c.description}</p>
                     <div className="flex items-center gap-4">
                       {(productCounts[c._id] || productCounts[c.id] || 0) > 0 && (
                         <div className="flex items-center gap-1.5">
@@ -475,7 +476,7 @@ export default function CategoriesPage() {
                     <ChevronRight size={14} className={`transition-transform ${expanded === c.id ? "rotate-90" : ""}`} />
                   </button>
                   {expanded === c.id && (
-                    <div className="px-5 pb-4 pt-3 bg-gray-50 border-t border-gray-100">
+                    <div className="px-5 pb-4 pt-3 bg-gray-50 border-t border-gray-100 max-h-[160px] overflow-y-auto">
                       <div className="flex flex-wrap gap-2">
                         {c.subcategories.map((s: any) => (
                           <span key={s.id} className="text-xs px-3 py-1.5 rounded-lg font-semibold border"

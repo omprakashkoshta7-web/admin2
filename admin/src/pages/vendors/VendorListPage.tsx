@@ -439,10 +439,11 @@ export default function VendorListPage() {
           </button>
           <button
             onClick={() => refetchVendors()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+            disabled={vendorsLoading}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold disabled:opacity-60"
           >
             <RefreshCw size={14} className={vendorsLoading ? "animate-spin" : ""} />
-            Refresh
+            {vendorsLoading ? "Refreshing..." : "Refresh"}
           </button>
         </div>
       </div>
@@ -612,11 +613,11 @@ export default function VendorListPage() {
 
       {/* Vendors Table */}
       <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full admin-responsive-table min-w-[1000px] lg:min-w-0">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left p-4">
+        <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th className="p-4 sticky top-0 bg-gray-50 z-10">
                   <input
                     type="checkbox"
                     checked={selectedVendors.length === filteredVendors.length && filteredVendors.length > 0}
@@ -624,31 +625,33 @@ export default function VendorListPage() {
                     className="rounded border-gray-300"
                   />
                 </th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Vendor</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Status</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Health Score</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Performance</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Stores</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Tier</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Priority</th>
-                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4">Actions</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[200px] sticky top-0 bg-gray-50 z-10">Vendor</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[100px] sticky top-0 bg-gray-50 z-10">Status</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[120px] sticky top-0 bg-gray-50 z-10">Health Score</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[140px] sticky top-0 bg-gray-50 z-10">Performance</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[80px] sticky top-0 bg-gray-50 z-10">Stores</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[80px] sticky top-0 bg-gray-50 z-10">Tier</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[80px] sticky top-0 bg-gray-50 z-10">Priority</th>
+                <th className="text-left text-xs font-bold text-gray-500 uppercase tracking-wide p-4 min-w-[100px] sticky top-0 bg-gray-50 z-10">Actions</th>
               </tr>
             </thead>
             <tbody>
               {vendorsLoading ? (
                 <tr>
-                  <td colSpan={9} className="p-8 text-center">
-                    <LoadingState message="Loading vendors..." />
+                  <td colSpan={9} className="p-8">
+                    <div className="flex justify-center">
+                      <LoadingState message="Loading vendors..." />
+                    </div>
                   </td>
                 </tr>
               ) : sortedVendors.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="p-8 text-center">
-                    <div className="flex flex-col items-center gap-3">
+                  <td colSpan={9} className="p-12">
+                    <div className="flex flex-col items-center justify-center gap-3 text-center">
                       <Store size={48} className="text-gray-300" />
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900">No vendors found</h3>
-                        <p className="text-gray-500">
+                        <p className="text-gray-500 mt-1">
                           {vendors.length === 0 
                             ? "No vendors in database yet. Real backend data - no mock data."
                             : "No vendors match your current filters."

@@ -412,8 +412,12 @@ export default function ProductsPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">
-                  {products.length === 0 ? "No products available. Add your first product to get started." : "No products match your search criteria."}
+                <td colSpan={6} className="px-4 py-12">
+                  <div className="flex flex-col items-center justify-center gap-2 text-center">
+                    <p className="text-sm font-semibold text-gray-500">
+                      {products.length === 0 ? "No products available. Add your first product to get started." : "No products match your search criteria."}
+                    </p>
+                  </div>
                 </td>
               </tr>
             )}

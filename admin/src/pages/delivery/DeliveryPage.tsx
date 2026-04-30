@@ -8,6 +8,7 @@ import {
   deleteAdminDeliveryPartner, 
   suspendAdminDeliveryPartner,
   resumeDeliveryPartner,
+
   assignDeliveryZones,
   setDeliveryPayoutRate,
   getDeliverySLAMetrics,
@@ -282,7 +283,8 @@ export default function DeliveryPage() {
           </button>
           <button
             onClick={() => refetch()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold"
+            disabled={false}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold disabled:opacity-60"
           >
             <RefreshCw size={14} />
             Refresh
@@ -365,7 +367,7 @@ export default function DeliveryPage() {
       </div>
 
       {/* Partners List */}
-      <div className="space-y-3">
+      <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
         {filteredItems.length > 0 ? (
           filteredItems.map((p: any) => (
             <div key={p.id} className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition">

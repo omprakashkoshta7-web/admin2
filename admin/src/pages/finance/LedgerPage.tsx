@@ -103,9 +103,13 @@ export default function LedgerPage() {
               className="appearance-none px-4 py-2.5 pr-8 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 transition text-sm font-semibold"
             >
               <option value="all">All Actions</option>
-              {uniqueActions.map((action: any) => (
-                <option key={String(action)} value={String(action)}>{String(action)}</option>
-              ))}
+              {uniqueActions.map((action: any) => {
+                const actionStr = String(action);
+                const displayName = actionStr.split('.').slice(-2).join('.').replace(/_/g, ' ');
+                return (
+                  <option key={actionStr} value={actionStr}>{displayName}</option>
+                );
+              })}
             </select>
             <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
@@ -136,7 +140,7 @@ export default function LedgerPage() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <p className="text-xs text-gray-600 font-mono">{(log.action || 'N/A').split('.').slice(-2).join('.')}</p>
+                      <p className="text-xs text-gray-600 font-mono">{(log.action || 'N/A').split('.').slice(-2).join('.').replace(/_/g, ' ')}</p>
                     </td>
                     <td className="p-4">
                       <p className="text-sm font-semibold text-gray-900">{log.targetType || '—'}</p>
@@ -154,8 +158,12 @@ export default function LedgerPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500">
-                    {logs.length === 0 ? "No audit logs available" : "No logs match your search criteria"}
+                  <td colSpan={7} className="px-4 py-12">
+                    <div className="flex flex-col items-center justify-center gap-2 text-center">
+                      <p className="text-sm font-semibold text-gray-500">
+                        {logs.length === 0 ? "No audit logs available" : "No logs match your search criteria"}
+                      </p>
+                    </div>
                   </td>
                 </tr>
               )}
