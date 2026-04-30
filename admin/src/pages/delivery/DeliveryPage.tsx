@@ -284,7 +284,8 @@ export default function DeliveryPage() {
           <button
             onClick={() => refetch()}
             disabled={false}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold disabled:opacity-60"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold disabled:opacity-60 cursor-pointer"
+            style={{ pointerEvents: 'auto' }}
           >
             <RefreshCw size={14} />
             Refresh

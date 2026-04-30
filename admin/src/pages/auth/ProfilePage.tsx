@@ -44,7 +44,7 @@ const InfoRow = ({ icon: Icon, label, value }: { icon: any; label: string; value
     </div>
     <div className="flex-1 min-w-0">
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{label}</p>
-      <p className="text-sm font-semibold text-gray-900 mt-0.5 truncate">{value || "—"}</p>
+      <p className="text-sm font-semibold text-gray-900 mt-0.5 truncate">{value || "Not provided"}</p>
     </div>
   </div>
 );
@@ -170,7 +170,7 @@ export default function ProfilePage() {
   };
 
   const formatDate = (d?: string) =>
-    d ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+    d ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "Not available";
 
   // Use latest name from local state if updated
   const displayName = profileForm.name || user?.name || "Super Admin";
