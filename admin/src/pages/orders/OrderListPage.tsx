@@ -371,15 +371,6 @@ const OrderListPage = () => {
             <Download size={14} />
             Export
           </button>
-          <button
-            onClick={() => refetchOrders()}
-            disabled={ordersLoading}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold disabled:opacity-60 cursor-pointer"
-            style={{ pointerEvents: ordersLoading ? 'none' : 'auto' }}
-          >
-            <RefreshCw size={14} className={ordersLoading ? "animate-spin" : ""} />
-            {ordersLoading ? "Refreshing..." : "Refresh"}
-          </button>
         </div>
       </div>
 

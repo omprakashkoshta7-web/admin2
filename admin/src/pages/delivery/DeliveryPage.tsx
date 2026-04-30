@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from "react";
-import { Truck, Plus, MapPin, X, CheckCircle, Edit, Trash2, Power, DollarSign, TrendingUp, Activity, Search, Filter, Download, RefreshCw, AlertTriangle } from "lucide-react";
+import { Truck, Plus, MapPin, X, CheckCircle, Edit, Trash2, Power, DollarSign, TrendingUp, Activity, Search, Filter, Download, AlertTriangle } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { 
   getAdminDeliveryPartners, 
@@ -280,15 +280,6 @@ export default function DeliveryPage() {
           >
             <Download size={14} />
             Export
-          </button>
-          <button
-            onClick={() => refetch()}
-            disabled={false}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:border-gray-900 transition text-sm font-semibold disabled:opacity-60 cursor-pointer"
-            style={{ pointerEvents: 'auto' }}
-          >
-            <RefreshCw size={14} />
-            Refresh
           </button>
           <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2.5 text-white text-sm font-bold rounded-xl transition" style={{ backgroundColor: ADMIN_COLORS.primary }}>
             <Plus size={15} /> Add Partner
