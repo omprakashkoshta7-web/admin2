@@ -94,14 +94,14 @@ export const resumeAdminVendor = async (id: string, reason?: string) => {
 export const approveAdminVendor = async (id: string, reason?: string) => {
   return await request(`/admin/vendors/${id}/approve`, {
     method: 'PATCH',
-    body: JSON.stringify({ reason }),
+    body: JSON.stringify({ approved: true, reason }),
   });
 };
 
 export const rejectAdminVendor = async (id: string, reason?: string) => {
-  return await request(`/admin/vendors/${id}/reject`, {
+  return await request(`/admin/vendors/${id}/approve`, {
     method: 'PATCH',
-    body: JSON.stringify({ reason }),
+    body: JSON.stringify({ approved: false, reason }),
   });
 };
 
