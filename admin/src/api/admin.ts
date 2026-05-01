@@ -908,3 +908,80 @@ export const deleteCoupon = async (id: string) => {
 export const getCouponUsage = async (id: string) => {
   return await request(`/admin/coupons/${id}/usage`);
 };
+
+// ─── Profiles API ──────────────────────────────────────────
+
+export const getAdminProfiles = async (params?: {
+  status?: string;
+  team?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}) => {
+  const query = params ? '?' + new URLSearchParams(
+    Object.entries(params).reduce((acc, [key, value]) => {
+      if (value !== undefined) acc[key] = String(value);
+      return acc;
+    }, {} as Record<string, string>)
+  ).toString() : '';
+  return await request(`/admin/profiles${query}`);
+};
+
+export const createAdminProfile = async (data: {
+  fullName: string;
+  emailAddress: string;
+  password: string;
+  role?: string;
+  team?: string;
+  permissions?: string[];
+  scopes?: string[];
+  phone?: string;
+}) => {
+  return await request('/admin/profiles', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
+export const getAdminProfileById = async (id: string) => {
+  return await request(`/admin/profiles/${id}`);
+};
+
+export const updateAdminProfile = async (id: string, data: {
+  fullName?: string;
+  emailAddress?: string;
+  phone?: string;
+  role?: string;
+  team?: string;
+  permissions?: string[];
+  scopes?: string[];
+  isActive?: boolean;
+}) => {
+  return await request(`/admin/profiles/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+};
+
+export const deleteAdminProfile = async (id: string) => {
+  return await request(`/admin/profiles/${id}`, {
+    method: 'DELETE',
+  });
+};
+
+export const getMyAdminProfile = async () => {
+  return await request('/admin/profile');
+};
+
+export const updateMyAdminProfile = async (data: {
+  fullName?: string;
+  emailAddress?: string;
+  phone?: string;
+  role?: string;
+  team?: string;
+}) => {
+  return await request('/admin/profile', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+};

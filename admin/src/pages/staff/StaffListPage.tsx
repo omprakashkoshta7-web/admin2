@@ -13,7 +13,11 @@ import {
   createAdminStaff, 
   deleteAdminStaff, 
   updateAdminStaffStatus,
-  updateAdminStaffRole 
+  updateAdminStaffRole,
+  getAdminProfiles,
+  createAdminProfile,
+  updateAdminProfile,
+  deleteAdminProfile
 } from "../../api/admin";
 import type { AdminStaffResponse } from "../../api/admin";
 
@@ -132,17 +136,15 @@ export default function StaffListPage() {
   const add = async () => {
     if (!form.name || !form.email || !form.phone || !form.role) return;
     
-    setError(null); // Clear any previous errors
+    setError(null);
     
     try {
-      // backend lists only users with role 'admin' or 'staff' — map selection accordingly
-      const normalizedRole = String(form.role).toLowerCase().includes('admin') ? 'admin' : 'staff';
-      const res = await createAdminStaff({ 
-        name: form.name, 
-        email: form.email, 
+      const res = await createAdminProfile({ 
+        fullName: form.name, 
+        emailAddress: form.email, 
         phone: form.phone,
         password: form.password, 
-        role: normalizedRole,
+        role: form.role,
         team: form.team,
         permissions: form.permissions,
         scopes: form.scopes
@@ -154,7 +156,7 @@ export default function StaffListPage() {
         name: form.name,
         email: form.email,
         phone: form.phone,
-        role: normalizedRole,
+        role: form.role,
         active: true,
         requiresApproval: false,
         permissions: [],
@@ -173,16 +175,10 @@ export default function StaffListPage() {
       }, 900);
     } catch (err: any) {
       console.error('Failed to create staff:', err);
-      
-      // Handle specific error messages
       if (err.message?.includes('email already exists') || err.message?.includes('409')) {
         setError('This email is already registered. Please use a different email address.');
-      } else if (err.message?.includes('phone')) {
-        setError('This phone number is already registered. Please use a different phone number.');
-      } else if (err.message?.includes('validation')) {
-        setError('Please check all fields and ensure they are filled correctly.');
       } else {
-        setError('Failed to create staff member. Please try again.');
+        setError(err?.message || 'Failed to create staff member. Please try again.');
       }
     }
   };
@@ -210,7 +206,7 @@ export default function StaffListPage() {
     if (!confirm('Are you sure you want to delete this staff member?')) return;
     try {
       setLoading(true);
-      await deleteAdminStaff(id);
+      await deleteAdminProfile(id);
       setAddedStaffList(prev => prev.filter(s => s.id !== id));
       refetch();
       alert('Staff member deleted successfully');

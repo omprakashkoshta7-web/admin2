@@ -86,10 +86,10 @@ export default function ProfilePage() {
     }
     try {
       setProfileLoading(true);
-      await request("/staff/auth/profile", {
+      await request("/admin/profile", {
         method: "PATCH",
         body: JSON.stringify({
-          name: profileForm.name.trim(),
+          fullName: profileForm.name.trim(),
           phone: profileForm.phone.trim(),
         }),
       });
