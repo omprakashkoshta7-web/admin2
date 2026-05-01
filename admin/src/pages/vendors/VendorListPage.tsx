@@ -844,24 +844,24 @@ export default function VendorListPage() {
                             <Eye size={14} style={{ color: ADMIN_COLORS.info }} />
                           </button>
                           
-                          {/* Approve/Reject for pending vendors */}
-                          {vendor.status === 'pending' && (
-                            <>
-                              <button
-                                onClick={() => handleAction('approve', vendor.id)}
-                                className="p-1.5 rounded-lg hover:bg-green-50 transition"
-                                title="Approve Vendor"
-                              >
-                                <CheckCircle size={14} style={{ color: ADMIN_COLORS.success }} />
-                              </button>
-                              <button
-                                onClick={() => handleAction('reject', vendor.id)}
-                                className="p-1.5 rounded-lg hover:bg-red-50 transition"
-                                title="Reject Vendor"
-                              >
-                                <XCircle size={14} style={{ color: ADMIN_COLORS.error }} />
-                              </button>
-                            </>
+                          {/* Approve/Reject - show for all vendors */}
+                          {!vendor.isApproved && (
+                            <button
+                              onClick={() => handleAction('approve', vendor.id)}
+                              className="p-1.5 rounded-lg hover:bg-green-50 transition"
+                              title="Approve Vendor"
+                            >
+                              <CheckCircle size={14} style={{ color: ADMIN_COLORS.success }} />
+                            </button>
+                          )}
+                          {vendor.isApproved && (
+                            <button
+                              onClick={() => handleAction('reject', vendor.id)}
+                              className="p-1.5 rounded-lg hover:bg-red-50 transition"
+                              title="Reject / Revoke Approval"
+                            >
+                              <XCircle size={14} style={{ color: ADMIN_COLORS.error }} />
+                            </button>
                           )}
                           
                           {/* Suspend/Unsuspend for active/suspended vendors */}
@@ -983,6 +983,62 @@ export default function VendorListPage() {
                         <p className="text-sm text-gray-700">{new Date(vendorDetails.createdAt || Date.now()).toLocaleDateString()}</p>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Quick Actions in View Modal */}
+                  <div className="flex gap-3 pt-2 border-t border-gray-100">
+                    {!vendorDetails.isApproved && (
+                      <button
+                        onClick={() => {
+                          setVendorDetails(null);
+                          setActionModal({ type: 'approve', vendorId: actionModal.vendorId });
+                        }}
+                        className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold transition"
+                        style={{ backgroundColor: ADMIN_COLORS.success }}
+                      >
+                        ✓ Approve Vendor
+                      </button>
+                    )}
+                    {vendorDetails.isApproved && (
+                      <button
+                        onClick={() => {
+                          setVendorDetails(null);
+                          setActionModal({ type: 'reject', vendorId: actionModal.vendorId });
+                        }}
+                        className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold transition"
+                        style={{ backgroundColor: ADMIN_COLORS.error }}
+                      >
+                        ✕ Revoke Approval
+                      </button>
+                    )}
+                    {!vendorDetails.isSuspended && (
+                      <button
+                        onClick={() => {
+                          setVendorDetails(null);
+                          setActionModal({ type: 'suspend', vendorId: actionModal.vendorId });
+                        }}
+                        className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 transition hover:bg-gray-50"
+                      >
+                        Suspend
+                      </button>
+                    )}
+                    {vendorDetails.isSuspended && (
+                      <button
+                        onClick={() => {
+                          setVendorDetails(null);
+                          setActionModal({ type: 'unsuspend', vendorId: actionModal.vendorId });
+                        }}
+                        className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 transition hover:bg-gray-50"
+                      >
+                        Unsuspend
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { setActionModal({ type: null, vendorId: null }); setVendorDetails(null); }}
+                      className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+                    >
+                      Close
+                    </button>
                   </div>
                 </div>
               </>
