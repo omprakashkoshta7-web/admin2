@@ -84,6 +84,27 @@ export const suspendAdminVendor = async (id: string, reason?: string) => {
   });
 };
 
+export const resumeAdminVendor = async (id: string, reason?: string) => {
+  return await request(`/admin/vendors/${id}/suspend`, {
+    method: 'PATCH',
+    body: JSON.stringify({ isSuspended: false, reason }),
+  });
+};
+
+export const approveAdminVendor = async (id: string, reason?: string) => {
+  return await request(`/admin/vendors/${id}/approve`, {
+    method: 'PATCH',
+    body: JSON.stringify({ reason }),
+  });
+};
+
+export const rejectAdminVendor = async (id: string, reason?: string) => {
+  return await request(`/admin/vendors/${id}/reject`, {
+    method: 'PATCH',
+    body: JSON.stringify({ reason }),
+  });
+};
+
 export const setAdminVendorPriority = async (id: string, priority: number) => {
   return await request(`/admin/vendors/${id}/priority`, {
     method: 'PATCH',
@@ -95,7 +116,6 @@ export const createAdminVendor = async (data: {
   name: string;
   email: string;
   phone: string;
-  password: string;
   location?: string;
   tier?: 'gold' | 'silver' | 'bronze';
 }) => {

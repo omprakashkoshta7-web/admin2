@@ -15,7 +15,10 @@ import { useAsync } from "../../hooks/useAsync";
 import { 
   getAdminVendors, 
   getAdminVendorById,
-  suspendAdminVendor, 
+  suspendAdminVendor,
+  resumeAdminVendor,
+  approveAdminVendor,
+  rejectAdminVendor,
   setAdminVendorPriority, 
   createAdminVendor,
   getAdminOrders
@@ -62,7 +65,7 @@ export default function VendorListPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedVendors, setSelectedVendors] = useState<string[]>([]);
   const [actionModal, setActionModal] = useState<{
-    type: 'suspend' | 'unsuspend' | 'priority' | 'create' | 'view' | null;
+    type: 'suspend' | 'unsuspend' | 'priority' | 'create' | 'view' | 'approve' | 'reject' | null;
     vendorId: string | null;
   }>({ type: null, vendorId: null });
   const [suspensionReason, setSuspensionReason] = useState("");
@@ -76,7 +79,6 @@ export default function VendorListPage() {
     email: '',
     phone: '',
     location: '',
-    password: '',
     tier: 'bronze' as 'gold' | 'silver' | 'bronze',
   });
 
@@ -275,7 +277,7 @@ export default function VendorListPage() {
     );
   };
 
-  const handleAction = async (type: 'suspend' | 'unsuspend' | 'priority' | 'create' | 'view', vendorId?: string) => {
+  const handleAction = async (type: 'suspend' | 'unsuspend' | 'priority' | 'create' | 'view' | 'approve' | 'reject', vendorId?: string) => {
     setActionModal({ type, vendorId: vendorId || null });
     setActionError("");
     
@@ -306,13 +308,46 @@ export default function VendorListPage() {
     try {
       setLoading(true);
       setActionError("");
-      await suspendAdminVendor(vendorId, suspend ? suspensionReason : undefined);
+      if (suspend) {
+        await suspendAdminVendor(vendorId, suspensionReason || undefined);
+      } else {
+        await resumeAdminVendor(vendorId);
+      }
       setActionModal({ type: null, vendorId: null });
       setSuspensionReason("");
       refetchVendors();
     } catch (error: any) {
       console.error('Failed to update vendor status:', error);
       setActionError(error?.message || 'Failed to update vendor status');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async (vendorId: string) => {
+    try {
+      setLoading(true);
+      setActionError("");
+      await approveAdminVendor(vendorId);
+      setActionModal({ type: null, vendorId: null });
+      refetchVendors();
+    } catch (error: any) {
+      setActionError(error?.message || 'Failed to approve vendor');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReject = async (vendorId: string) => {
+    try {
+      setLoading(true);
+      setActionError("");
+      await rejectAdminVendor(vendorId, suspensionReason || undefined);
+      setActionModal({ type: null, vendorId: null });
+      setSuspensionReason("");
+      refetchVendors();
+    } catch (error: any) {
+      setActionError(error?.message || 'Failed to reject vendor');
     } finally {
       setLoading(false);
     }
@@ -336,15 +371,15 @@ export default function VendorListPage() {
 
   const handleCreateVendor = async () => {
     try {
-      if (!newVendorForm.name || !newVendorForm.email || !newVendorForm.phone || !newVendorForm.password) {
-        setActionError('Please fill in all required fields (name, email, phone, password)');
+      if (!newVendorForm.name || !newVendorForm.email || !newVendorForm.phone) {
+        setActionError('Please fill in all required fields (name, email, phone)');
         return;
       }
       setLoading(true);
       setActionError("");
       await createAdminVendor(newVendorForm);
       setActionModal({ type: null, vendorId: null });
-      setNewVendorForm({ name: '', email: '', phone: '', location: '', password: '', tier: 'bronze' });
+      setNewVendorForm({ name: '', email: '', phone: '', location: '', tier: 'bronze' });
       refetchVendors();
     } catch (error: any) {
       console.error('Failed to create vendor:', error);
@@ -809,7 +844,28 @@ export default function VendorListPage() {
                             <Eye size={14} style={{ color: ADMIN_COLORS.info }} />
                           </button>
                           
-                          {vendor.canSuspend && (
+                          {/* Approve/Reject for pending vendors */}
+                          {vendor.status === 'pending' && (
+                            <>
+                              <button
+                                onClick={() => handleAction('approve', vendor.id)}
+                                className="p-1.5 rounded-lg hover:bg-green-50 transition"
+                                title="Approve Vendor"
+                              >
+                                <CheckCircle size={14} style={{ color: ADMIN_COLORS.success }} />
+                              </button>
+                              <button
+                                onClick={() => handleAction('reject', vendor.id)}
+                                className="p-1.5 rounded-lg hover:bg-red-50 transition"
+                                title="Reject Vendor"
+                              >
+                                <XCircle size={14} style={{ color: ADMIN_COLORS.error }} />
+                              </button>
+                            </>
+                          )}
+                          
+                          {/* Suspend/Unsuspend for active/suspended vendors */}
+                          {vendor.status !== 'pending' && vendor.canSuspend && (
                             <button
                               onClick={() => handleAction(
                                 vendor.status === 'suspended' ? 'unsuspend' : 'suspend', 
@@ -932,6 +988,46 @@ export default function VendorListPage() {
               </>
             )}
             
+            {/* Approve Vendor Modal */}
+            {actionModal.type === 'approve' && (
+              <>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">Approve Vendor</h3>
+                  <button onClick={() => setActionModal({ type: null, vendorId: null })} className="p-2 hover:bg-gray-100 rounded-lg">
+                    <XCircle size={20} className="text-gray-400" />
+                  </button>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Are you sure you want to approve this vendor? They will be able to receive orders.
+                </p>
+              </>
+            )}
+
+            {/* Reject Vendor Modal */}
+            {actionModal.type === 'reject' && (
+              <>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">Reject Vendor</h3>
+                  <button onClick={() => setActionModal({ type: null, vendorId: null })} className="p-2 hover:bg-gray-100 rounded-lg">
+                    <XCircle size={20} className="text-gray-400" />
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600">Provide a reason for rejecting this vendor.</p>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-2">Reason (optional)</label>
+                    <textarea
+                      value={suspensionReason}
+                      onChange={(e) => setSuspensionReason(e.target.value)}
+                      placeholder="Enter reason for rejection..."
+                      className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900 resize-none"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
             {/* Suspend Vendor Modal */}
             {actionModal.type === 'suspend' && (
               <>
@@ -1073,16 +1169,6 @@ export default function VendorListPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-600 mb-2">Password *</label>
-                      <input
-                        type="password"
-                        value={newVendorForm.password}
-                        onChange={(e) => setNewVendorForm({ ...newVendorForm, password: e.target.value })}
-                        placeholder="Minimum 8 characters"
-                        className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900"
-                      />
-                    </div>
-                    <div>
                       <label className="block text-xs font-bold text-gray-600 mb-2">Tier</label>
                       <select
                         value={newVendorForm.tier}
@@ -1114,6 +1200,10 @@ export default function VendorListPage() {
                       handlePriorityChange(actionModal.vendorId!);
                     } else if (actionModal.type === 'create') {
                       handleCreateVendor();
+                    } else if (actionModal.type === 'approve') {
+                      handleApprove(actionModal.vendorId!);
+                    } else if (actionModal.type === 'reject') {
+                      handleReject(actionModal.vendorId!);
                     } else {
                       handleSuspend(actionModal.vendorId!, actionModal.type === 'suspend');
                     }
@@ -1124,12 +1214,14 @@ export default function VendorListPage() {
                   }
                   className="flex-1 px-4 py-2 text-white font-bold rounded-xl transition disabled:opacity-60"
                   style={{ 
-                    backgroundColor: actionModal.type === 'suspend' ? ADMIN_COLORS.error : ADMIN_COLORS.primary 
+                    backgroundColor: (actionModal.type === 'suspend' || actionModal.type === 'reject') ? ADMIN_COLORS.error : ADMIN_COLORS.primary 
                   }}
                 >
                   {loading ? "Processing..." : 
                    actionModal.type === 'suspend' ? "Suspend Vendor" :
                    actionModal.type === 'unsuspend' ? "Unsuspend Vendor" :
+                   actionModal.type === 'approve' ? "Approve Vendor" :
+                   actionModal.type === 'reject' ? "Reject Vendor" :
                    actionModal.type === 'priority' ? "Update Priority" : "Create Vendor"}
                 </button>
               </div>
