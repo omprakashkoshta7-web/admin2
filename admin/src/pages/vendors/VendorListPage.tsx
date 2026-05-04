@@ -281,9 +281,11 @@ export default function VendorListPage() {
   const handleAction = async (type: 'suspend' | 'unsuspend' | 'priority' | 'create' | 'view' | 'approve' | 'reject', vendorId?: string) => {
     setActionModal({ type, vendorId: vendorId || null });
     setActionError("");
+    setSuspensionReason("");
     
     // Load vendor details for view
     if (type === 'view' && vendorId) {
+      setVendorDetails(null); // clear stale data
       try {
         setLoading(true);
         const details = await getAdminVendorById(vendorId);
@@ -904,6 +906,28 @@ export default function VendorListPage() {
         <div className="admin-modal-overlay">
           <div className="bg-white rounded-2xl p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             
+            {/* View — loading state */}
+            {actionModal.type === 'view' && loading && !vendorDetails && (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <RefreshCw size={28} className="animate-spin text-gray-400" />
+                <p className="text-sm text-gray-500 font-semibold">Loading vendor details...</p>
+              </div>
+            )}
+
+            {/* View — error state */}
+            {actionModal.type === 'view' && !loading && !vendorDetails && actionError && (
+              <div className="flex flex-col items-center justify-center py-12 gap-4">
+                <AlertTriangle size={32} style={{ color: ADMIN_COLORS.error }} />
+                <p className="text-sm font-semibold" style={{ color: ADMIN_COLORS.error }}>{actionError}</p>
+                <button
+                  onClick={() => { setActionModal({ type: null, vendorId: null }); setActionError(""); }}
+                  className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+                >
+                  Close
+                </button>
+              </div>
+            )}
+
             {/* View Vendor Details Modal */}
             {actionModal.type === 'view' && vendorDetails && (
               <>
@@ -1214,18 +1238,6 @@ export default function VendorListPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-600 mb-2">Password *</label>
-                      <input
-                        type="password"
-                        value={newVendorForm.password}
-                        onChange={(e) => setNewVendorForm({ ...newVendorForm, password: e.target.value })}
-                        placeholder="Min 8 characters"
-                        className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
                       <label className="block text-xs font-bold text-gray-600 mb-2">Location</label>
                       <input
                         type="text"
@@ -1235,6 +1247,8 @@ export default function VendorListPage() {
                         className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900"
                       />
                     </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-600 mb-2">Tier</label>
                       <select
@@ -1294,8 +1308,12 @@ export default function VendorListPage() {
               </div>
             )}
             
-            {actionError && (
-              <p className="mt-3 text-xs font-semibold text-red-600 text-center">⚠ {actionError}</p>
+            {actionError && actionModal.type !== 'view' && (
+              <div className="flex items-start gap-2 mt-4 p-3 rounded-xl border"
+                style={{ backgroundColor: ADMIN_COLORS.errorBg, borderColor: ADMIN_COLORS.errorBorder }}>
+                <AlertTriangle size={15} className="flex-shrink-0 mt-0.5" style={{ color: ADMIN_COLORS.error }} />
+                <p className="text-sm font-semibold" style={{ color: ADMIN_COLORS.error }}>{actionError}</p>
+              </div>
             )}
           </div>
         </div>
