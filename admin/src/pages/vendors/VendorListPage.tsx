@@ -78,6 +78,7 @@ export default function VendorListPage() {
     name: '',
     email: '',
     phone: '',
+    password: '',
     location: '',
     tier: 'bronze' as 'gold' | 'silver' | 'bronze',
   });
@@ -371,15 +372,15 @@ export default function VendorListPage() {
 
   const handleCreateVendor = async () => {
     try {
-      if (!newVendorForm.name || !newVendorForm.email || !newVendorForm.phone) {
-        setActionError('Please fill in all required fields (name, email, phone)');
+      if (!newVendorForm.name || !newVendorForm.email || !newVendorForm.phone || !newVendorForm.password) {
+        setActionError('Please fill in all required fields (name, email, phone, password)');
         return;
       }
       setLoading(true);
       setActionError("");
       await createAdminVendor(newVendorForm);
       setActionModal({ type: null, vendorId: null });
-      setNewVendorForm({ name: '', email: '', phone: '', location: '', tier: 'bronze' });
+      setNewVendorForm({ name: '', email: '', phone: '', password: '', location: '', tier: 'bronze' });
       refetchVendors();
     } catch (error: any) {
       console.error('Failed to create vendor:', error);
@@ -1213,6 +1214,18 @@ export default function VendorListPage() {
                       />
                     </div>
                     <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-2">Password *</label>
+                      <input
+                        type="password"
+                        value={newVendorForm.password}
+                        onChange={(e) => setNewVendorForm({ ...newVendorForm, password: e.target.value })}
+                        placeholder="Min 8 characters"
+                        className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
                       <label className="block text-xs font-bold text-gray-600 mb-2">Location</label>
                       <input
                         type="text"
@@ -1222,8 +1235,6 @@ export default function VendorListPage() {
                         className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-gray-900"
                       />
                     </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-600 mb-2">Tier</label>
                       <select
@@ -1266,7 +1277,7 @@ export default function VendorListPage() {
                   }}
                   disabled={loading || 
                     (actionModal.type === 'suspend' && !suspensionReason.trim()) ||
-                    (actionModal.type === 'create' && (!newVendorForm.name || !newVendorForm.email || !newVendorForm.phone))
+                    (actionModal.type === 'create' && (!newVendorForm.name || !newVendorForm.email || !newVendorForm.phone || !newVendorForm.password))
                   }
                   className="flex-1 px-4 py-2 text-white font-bold rounded-xl transition disabled:opacity-60"
                   style={{ 
