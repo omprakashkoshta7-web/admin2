@@ -10,10 +10,10 @@ import AdminMetricCard from "../../components/ui/AdminMetricCard";
 import AnimatedCount from "../../components/ui/AnimatedCount";
 import { 
   getAdminStaff, 
+  createAdminStaff,
   deleteAdminStaff, 
   updateAdminStaffStatus,
   updateAdminStaffRole,
-  createAdminProfile,
   deleteAdminProfile
 } from "../../api/admin";
 import type { AdminStaffResponse } from "../../api/admin";
@@ -136,12 +136,16 @@ export default function StaffListPage() {
     setError(null);
     
     try {
-      const res = await createAdminProfile({ 
-        fullName: form.name, 
-        emailAddress: form.email, 
+      // Deployed backend accepts: 'admin' or 'super_admin' only
+      // Map all roles to 'admin' (staff role is stored in staffProfile.team)
+      const normalizedRole = form.role === 'SuperAdmin' ? 'super_admin' : 'admin';
+      // Use /admin/staff endpoint which accepts name/email fields
+      const res = await createAdminStaff({ 
+        name: form.name, 
+        email: form.email, 
         phone: form.phone,
         password: form.password, 
-        role: form.role,
+        role: normalizedRole,
         team: form.team,
         permissions: form.permissions,
         scopes: form.scopes
