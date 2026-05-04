@@ -40,6 +40,7 @@ export default function DeliveryPage() {
   const [zoneSuccess, setZoneSuccess] = useState(false);
   const [statusError, setStatusError] = useState<string>("");
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string>("");
 
   const normalizePartner = (p: any) => ({
     id: String(p._id || p.id || p.partnerId || ''),
@@ -116,6 +117,7 @@ export default function DeliveryPage() {
 
   const add = async () => {
     if (!form.name) return;
+    setFormError("");
     try {
       setUploadingImage(true);
       
@@ -157,9 +159,20 @@ export default function DeliveryPage() {
         setCurrentId(null);
         setUploadingImage(false);
       }, 900);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save delivery partner:', error);
       setUploadingImage(false);
+      // Parse a user-friendly message from the error
+      const msg: string =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Something went wrong. Please try again.";
+      // Map common backend messages to friendlier copy
+      if (msg.toLowerCase().includes("email already exists") || error?.response?.status === 409) {
+        setFormError("A delivery partner with this email already exists. Please use a different email address.");
+      } else {
+        setFormError(msg);
+      }
     }
   };
 
@@ -499,6 +512,7 @@ export default function DeliveryPage() {
                 setEditing(false); 
                 setCurrentId(null); 
                 setForm({ name: "", email: "", phone: "", vehicleType: "bike", zoneAssignments: "" }); 
+                setFormError("");
               }}>
                 <X size={18} className="text-gray-400" />
               </button>
@@ -513,6 +527,12 @@ export default function DeliveryPage() {
               </div>
             ) : (
               <>
+                {formError && (
+                  <div className="flex items-start gap-2 p-3 mb-4 rounded-xl border" style={{ backgroundColor: ADMIN_COLORS.errorBg, borderColor: ADMIN_COLORS.errorBorder }}>
+                    <AlertTriangle size={15} className="flex-shrink-0 mt-0.5" style={{ color: ADMIN_COLORS.error }} />
+                    <p className="text-sm font-semibold" style={{ color: ADMIN_COLORS.error }}>{formError}</p>
+                  </div>
+                )}
                 <div className="space-y-4 mb-5">
                   <div>
                     <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Partner Name *</label>
@@ -578,6 +598,7 @@ export default function DeliveryPage() {
                       setShowAdd(false); 
                       setEditing(false); 
                       setCurrentId(null); 
+                      setFormError("");
                     }} 
                     className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
                   >

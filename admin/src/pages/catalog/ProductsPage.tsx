@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Plus, Search, Edit2, Trash2, X, CheckCircle, Package, Download, RefreshCw, Upload } from "lucide-react";
 import { useAsync } from "../../hooks/useAsync";
 import { getProductCategories, getProducts, createProduct, updateProduct, deleteProduct } from "../../api/admin";
+import { uploadImage } from "../../utils/uploadImage";
 
 const CS = { border: "1px solid rgba(197,206,255,0.52)", boxShadow: "0 12px 30px rgba(15,23,42,0.08)" };
 
@@ -128,26 +129,14 @@ export default function ProductsPage() {
     if (file.size > 5 * 1024 * 1024) { alert('Image size must be less than 5MB'); return; }
     try {
       setUploadingImage(true);
+      // Show local preview immediately
       const reader = new FileReader();
       reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('folder', 'products');
-      const token = localStorage.getItem('admin_token');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-      const response = await fetch(`${API_BASE_URL}/upload/image`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData,
-      });
-      if (!response.ok) throw new Error('Failed to upload image');
-      const data = await response.json();
-      const imageUrl = data.data?.url || data.url;
-      if (imageUrl) {
-        const fullUrl = imageUrl.startsWith('http') ? imageUrl : `${import.meta.env.VITE_PRODUCT_SERVICE_URL || 'http://localhost:4003'}${imageUrl}`;
-        setForm(prev => ({ ...prev, imageUrl: fullUrl }));
-      } else throw new Error('No image URL returned');
+      // Upload to Firebase Storage
+      const imageUrl = await uploadImage(file, 'products');
+      setForm(prev => ({ ...prev, imageUrl }));
+      setImagePreview(imageUrl);
     } catch (error) {
       console.error('Image upload failed:', error);
       alert('Failed to upload image. Please try again.');

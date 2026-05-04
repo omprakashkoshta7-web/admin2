@@ -5,6 +5,7 @@ import { useAsync } from "../../hooks/useAsync";
 import { getProductCategories, createProductCategory, updateProductCategory, deleteProductCategory, getProducts } from "../../api/admin";
 import type { AdminCategoriesResponse } from "../../api/admin";
 import LoadingState from "../../components/ui/LoadingState";
+import { uploadImage } from "../../utils/uploadImage";
 
 type CategoryForm = {
   name: string;
@@ -111,7 +112,6 @@ export default function CategoriesPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file
     if (!file.type.startsWith('image/')) {
       alert('Please select a valid image file');
       return;
@@ -125,51 +125,15 @@ export default function CategoriesPage() {
     try {
       setUploadingImage(true);
 
-      // Create preview
+      // Show local preview immediately
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
+      reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
 
-      // Upload to server using FormData (multer)
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('folder', 'categories');
-
-      // Get auth token — same key used by apiClient
-      const token = localStorage.getItem('admin_token');
-      
-      // Upload via gateway to product service
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-      const response = await fetch(`${API_BASE_URL}/upload/image`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
-      }
-
-      const data = await response.json();
-      
-      // Backend returns { success: true, data: { url, filename, ... }, message: "..." }
-      const imageUrl = data.data?.url || data.url;
-
-      if (imageUrl) {
-        // Construct full URL if it's a relative path
-        const fullImageUrl = imageUrl.startsWith('http') 
-          ? imageUrl 
-          : `${import.meta.env.VITE_PRODUCT_SERVICE_URL || 'http://localhost:4003'}${imageUrl}`;
-        
-        setForm(prev => ({ ...prev, image: fullImageUrl }));
-        console.log('Image uploaded successfully:', fullImageUrl);
-      } else {
-        throw new Error('No image URL returned from server');
-      }
+      // Upload to Firebase Storage
+      const imageUrl = await uploadImage(file, 'categories');
+      setForm(prev => ({ ...prev, image: imageUrl }));
+      setImagePreview(imageUrl);
     } catch (error) {
       console.error('Image upload failed:', error);
       alert('Failed to upload image. Please try again.');
