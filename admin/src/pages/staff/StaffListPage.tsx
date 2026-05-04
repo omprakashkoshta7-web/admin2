@@ -112,6 +112,42 @@ export default function StaffListPage() {
     permissions: [] as string[],
     scopes: [] as string[]
   });
+
+  // Toggle a single permission value
+  const togglePermission = (value: string) => {
+    setForm(p => ({
+      ...p,
+      permissions: p.permissions.includes(value)
+        ? p.permissions.filter(v => v !== value)
+        : [...p.permissions, value]
+    }));
+  };
+
+  // Toggle a single scope value
+  const toggleScope = (value: string) => {
+    setForm(p => ({
+      ...p,
+      scopes: p.scopes.includes(value)
+        ? p.scopes.filter(v => v !== value)
+        : [...p.scopes, value]
+    }));
+  };
+
+  const permissionModules = [
+    { label: "Orders",    read: "orders:read",    write: "orders:write" },
+    { label: "Vendors",   read: "vendors:read",   write: "vendors:write" },
+    { label: "Customers", read: "customers:read", write: "customers:write" },
+    { label: "Finance",   read: "finance:read",   write: "finance:write" },
+    { label: "Reports",   read: "reports:read",   write: null },
+    { label: "Support",   read: "support:read",   write: "support:write" },
+  ];
+
+  const scopeOptions = [
+    { label: "Global Access",       value: "global" },
+    { label: "Regional Access",     value: "regional" },
+    { label: "Store Specific",      value: "store-specific" },
+    { label: "Department Specific", value: "department-specific" },
+  ];
   const [editRoleForm, setEditRoleForm] = useState<Role | "">("");
   const [added, setAdded] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -671,47 +707,70 @@ export default function StaffListPage() {
                     )}
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Permissions</label>
-                    <select
-                      multiple
-                      value={form.permissions}
-                      onChange={(e) => {
-                        const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-                        setForm(p => ({ ...p, permissions: selectedOptions }));
-                      }}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-gray-900 transition h-24"
-                    >
-                      <option value="orders:read">Orders - Read</option>
-                      <option value="orders:write">Orders - Write</option>
-                      <option value="vendors:read">Vendors - Read</option>
-                      <option value="vendors:write">Vendors - Write</option>
-                      <option value="customers:read">Customers - Read</option>
-                      <option value="customers:write">Customers - Write</option>
-                      <option value="finance:read">Finance - Read</option>
-                      <option value="finance:write">Finance - Write</option>
-                      <option value="reports:read">Reports - Read</option>
-                      <option value="support:read">Support - Read</option>
-                      <option value="support:write">Support - Write</option>
-                    </select>
-                    <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
+                    <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Permissions</label>
+                    <div className="rounded-xl border border-gray-200 overflow-hidden">
+                      <div className="grid grid-cols-3 bg-gray-50 border-b border-gray-200 px-3 py-2">
+                        <span className="text-xs font-bold text-gray-500 uppercase">Module</span>
+                        <span className="text-xs font-bold text-gray-500 uppercase text-center">Read</span>
+                        <span className="text-xs font-bold text-gray-500 uppercase text-center">Write</span>
+                      </div>
+                      {permissionModules.map((mod, i) => (
+                        <div key={mod.label}
+                          className={`grid grid-cols-3 items-center px-3 py-2.5 ${i < permissionModules.length - 1 ? "border-b border-gray-100" : ""}`}>
+                          <span className="text-sm font-semibold text-gray-700">{mod.label}</span>
+                          <div className="flex justify-center">
+                            <input
+                              type="checkbox"
+                              checked={form.permissions.includes(mod.read)}
+                              onChange={() => togglePermission(mod.read)}
+                              className="w-4 h-4 rounded cursor-pointer accent-gray-900"
+                            />
+                          </div>
+                          <div className="flex justify-center">
+                            {mod.write ? (
+                              <input
+                                type="checkbox"
+                                checked={form.permissions.includes(mod.write)}
+                                onChange={() => togglePermission(mod.write!)}
+                                className="w-4 h-4 rounded cursor-pointer accent-gray-900"
+                              />
+                            ) : (
+                              <span className="text-gray-300 text-xs">—</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Scopes</label>
-                    <select
-                      multiple
-                      value={form.scopes}
-                      onChange={(e) => {
-                        const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-                        setForm(p => ({ ...p, scopes: selectedOptions }));
-                      }}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-gray-900 transition h-20"
-                    >
-                      <option value="global">Global Access</option>
-                      <option value="regional">Regional Access</option>
-                      <option value="store-specific">Store Specific</option>
-                      <option value="department-specific">Department Specific</option>
-                    </select>
-                    <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
+                    <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Scopes</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {scopeOptions.map(scope => (
+                        <label key={scope.value}
+                          className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border cursor-pointer transition select-none ${
+                            form.scopes.includes(scope.value)
+                              ? "border-gray-900 bg-gray-900 text-white"
+                              : "border-gray-200 bg-white text-gray-700 hover:border-gray-400"
+                          }`}>
+                          <input
+                            type="checkbox"
+                            checked={form.scopes.includes(scope.value)}
+                            onChange={() => toggleScope(scope.value)}
+                            className="hidden"
+                          />
+                          <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                            form.scopes.includes(scope.value) ? "border-white" : "border-gray-300"
+                          }`}>
+                            {form.scopes.includes(scope.value) && (
+                              <svg className="w-2.5 h-2.5 text-gray-900" viewBox="0 0 12 12" fill="none">
+                                <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            )}
+                          </div>
+                          <span className="text-xs font-semibold">{scope.label}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <div className="flex gap-3">

@@ -20,8 +20,22 @@ export default function LedgerPage() {
   
   const logs = Array.isArray((auditData as any)?.logs) ? (auditData as any).logs : [];
   
+  // Filter out internal/staff management actions that shouldn't be visible to frontend users
+  const hiddenActionPrefixes = [
+    'staff.update',
+    'staff.activate',
+    'staff.deactivate',
+    'admin.control',
+    'system',
+  ];
+  
+  const shouldShowAction = (action: string) => {
+    if (!action) return false;
+    return !hiddenActionPrefixes.some(prefix => action.startsWith(prefix));
+  };
+  
   const filtered = logs.filter((log: any) => {
-    if (!log) return false;
+    if (!log || !shouldShowAction(log.action)) return false;
     const matchesSearch = log.actorId?.toLowerCase().includes(search.toLowerCase()) ||
                          log.action?.toLowerCase().includes(search.toLowerCase()) ||
                          log.targetId?.toLowerCase().includes(search.toLowerCase()) ||
@@ -30,7 +44,12 @@ export default function LedgerPage() {
     return matchesSearch && matchesAction;
   });
 
-  const uniqueActions = Array.from(new Set(logs.map((l: any) => l.action).filter(Boolean)));
+  const uniqueActions = Array.from(new Set(
+    logs
+      .filter((l: any) => l && shouldShowAction(l.action))
+      .map((l: any) => l.action)
+      .filter(Boolean)
+  ));
 
   const exportLogs = () => {
     const csvContent = [
