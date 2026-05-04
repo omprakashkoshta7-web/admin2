@@ -1,36 +1,42 @@
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import app from '../config/firebase';
-
-const storage = getStorage(app);
-
 /**
- * Uploads an image file to Firebase Storage and returns the public download URL.
- * @param file  - The File object to upload
- * @param folder - Storage folder, e.g. 'categories' | 'products'
+ * Uploads an image file to the backend gateway and returns the public URL.
+ * Endpoint: POST /api/upload/image (proxied to product-service)
+ *
+ * @param file   - The File object to upload
+ * @param folder - Storage folder hint, e.g. 'categories' | 'products'
  */
 export async function uploadImage(file: File, folder: string = 'general'): Promise<string> {
-  const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-  const storagePath = `admin/${folder}/${unique}-${safeFileName}`;
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('folder', folder);
 
-  const storageRef = ref(storage, storagePath);
-  const uploadTask = uploadBytesResumable(storageRef, file, {
-    contentType: file.type,
+  const token = localStorage.getItem('admin_token');
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
+  const response = await fetch(`${API_BASE_URL}/upload/image`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
   });
 
-  return new Promise((resolve, reject) => {
-    uploadTask.on(
-      'state_changed',
-      null, // no progress handler needed
-      (error) => reject(error),
-      async () => {
-        try {
-          const url = await getDownloadURL(uploadTask.snapshot.ref);
-          resolve(url);
-        } catch (err) {
-          reject(err);
-        }
-      }
-    );
-  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err?.message || `Upload failed with status ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  // Backend returns { success: true, data: { url, ... } }
+  const imageUrl: string = data?.data?.url || data?.url;
+
+  if (!imageUrl) {
+    throw new Error('No image URL returned from server');
+  }
+
+  // If relative path, prepend product service base URL
+  if (imageUrl.startsWith('http')) return imageUrl;
+  const productBase = import.meta.env.VITE_PRODUCT_SERVICE_URL || 'http://localhost:4003';
+  return `${productBase}${imageUrl}`;
 }
