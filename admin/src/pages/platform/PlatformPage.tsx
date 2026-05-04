@@ -174,14 +174,15 @@ export default function PlatformPage() {
       setError('Please select a city');
       return;
     }
-    
-    if (!pauseReason.trim()) {
+
+    const isPaused = cityPause[selectedCity] || false;
+    const newState = !isPaused;
+
+    // Reason is required only when pausing, not when resuming
+    if (newState && !pauseReason.trim()) {
       setError('Please provide a reason for pausing');
       return;
     }
-    
-    const isPaused = cityPause[selectedCity] || false;
-    const newState = !isPaused;
     
     try {
       setLoading(true);
@@ -189,11 +190,12 @@ export default function PlatformPage() {
       await updateAdminControl('city-pause', { 
         city: selectedCity, 
         paused: newState,
-        reason: pauseReason 
+        reason: pauseReason.trim(),
       });
+      // Update local state immediately so View Details shows the reason right away
       setCityPause(prev => ({ ...prev, [selectedCity]: newState }));
       if (newState) {
-        setCityDetails(prev => ({ ...prev, [selectedCity]: { reason: pauseReason, pausedAt: new Date().toISOString() } }));
+        setCityDetails(prev => ({ ...prev, [selectedCity]: { reason: pauseReason.trim(), pausedAt: new Date().toISOString() } }));
       } else {
         setCityDetails(prev => { const n = { ...prev }; delete n[selectedCity]; return n; });
       }
@@ -677,7 +679,7 @@ export default function PlatformPage() {
                 <>
                   <div>
                     <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
-                      Reason for {cityPause[selectedCity] ? "Resuming" : "Pausing"}
+                      Reason for {cityPause[selectedCity] ? "Resuming" : "Pausing"}{cityPause[selectedCity] ? " (optional)" : " *"}
                     </label>
                     <textarea
                       value={pauseReason}
@@ -714,7 +716,7 @@ export default function PlatformPage() {
               </button>
               <button 
                 onClick={handleCityPause}
-                disabled={!selectedCity || !pauseReason.trim() || loading}
+                disabled={!selectedCity || (!(cityPause[selectedCity]) && !pauseReason.trim()) || loading}
                 className="flex-1 py-2.5 text-white text-sm font-bold rounded-xl transition disabled:opacity-50"
                 style={{ 
                   backgroundColor: cityPause[selectedCity] ? ADMIN_COLORS.success : ADMIN_COLORS.warning 

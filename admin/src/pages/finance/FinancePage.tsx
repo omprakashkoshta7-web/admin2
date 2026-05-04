@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   DollarSign, TrendingUp, Store,
@@ -12,18 +12,42 @@ import LoadingState from "../../components/ui/LoadingState";
 import AdminMetricCard from "../../components/ui/AdminMetricCard";
 import { getAdminReports } from "../../api/admin";
 
+// Calculate from/to ISO strings based on selected range
+function getDateRange(range: 'today' | 'week' | 'month'): { from: string; to: string } {
+  const now = new Date();
+  const to = new Date(now);
+  to.setHours(23, 59, 59, 999);
+
+  const from = new Date(now);
+  if (range === 'today') {
+    from.setHours(0, 0, 0, 0);
+  } else if (range === 'week') {
+    from.setDate(now.getDate() - 6);
+    from.setHours(0, 0, 0, 0);
+  } else {
+    // month — last 30 days
+    from.setDate(now.getDate() - 29);
+    from.setHours(0, 0, 0, 0);
+  }
+
+  return { from: from.toISOString(), to: to.toISOString() };
+}
+
 export default function FinancePage() {
   const navigate = useNavigate();
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('month');
 
-  // Fetch financial data from backend
+  // Recompute date range whenever timeRange changes
+  const dateRange = useMemo(() => getDateRange(timeRange), [timeRange]);
+
+  // Fetch financial data from backend — re-fetches when dateRange changes
   const { data: reportsData, loading: reportsLoading, refetch: refetchFinance } = useAsync(
-    () => getAdminReports(),
+    () => getAdminReports({ from: dateRange.from, to: dateRange.to }),
     {},
-    []
+    [dateRange.from, dateRange.to]
   );
 
-  // Auto-refresh every 30 seconds
+  // Auto-refresh every 30 seconds (re-uses current dateRange via refetch)
   useEffect(() => {
     const interval = setInterval(() => { refetchFinance(); }, 30000);
     return () => clearInterval(interval);
@@ -63,7 +87,7 @@ export default function FinancePage() {
     window.URL.revokeObjectURL(url);
   };
 
-  if (reportsLoading) {
+  if (reportsLoading && !reportsData) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingState message="Loading financial data" />
@@ -118,7 +142,7 @@ export default function FinancePage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-4 gap-4">
-        <AdminMetricCard index={0} label="Gross Revenue" value={`₹${(totalGross / 1000).toFixed(1)}K`} accent={ADMIN_COLORS.primary} icon={DollarSign} note="Total" />
+        <AdminMetricCard index={0} label="Gross Revenue" value={`₹${(totalGross / 1000).toFixed(1)}K`} accent={ADMIN_COLORS.primary} icon={DollarSign} note={timeRange === 'today' ? 'Today' : timeRange === 'week' ? 'Last 7 days' : 'Last 30 days'} />
         <AdminMetricCard label="Net Revenue" value={`₹${(totalNet / 1000).toFixed(1)}K`} accent={ADMIN_COLORS.success} accentBg={ADMIN_COLORS.successBg} icon={TrendingUp} note="After 15% fee" />
         <AdminMetricCard label="Commission" value={`₹${(totalCommission / 1000).toFixed(1)}K`} accent={ADMIN_COLORS.info} accentBg={ADMIN_COLORS.infoBg} icon={Activity} note="Platform fee" />
         <AdminMetricCard label="Total Orders" value={ordersByStatus.reduce((sum: number, status: any) => sum + (status.count || 0), 0).toString()} accent={ADMIN_COLORS.warning} accentBg={ADMIN_COLORS.warningBg} icon={Store} note="All orders" />
@@ -129,7 +153,9 @@ export default function FinancePage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-lg font-bold text-gray-900">Revenue Trend</h3>
-            <p className="text-sm text-gray-500">Daily revenue and order count</p>
+            <p className="text-sm text-gray-500">
+              {timeRange === 'today' ? 'Today' : timeRange === 'week' ? 'Last 7 days' : 'Last 30 days'} — daily revenue and order count
+            </p>
           </div>
           <div className="flex items-center gap-4 text-xs">
             <div className="flex items-center gap-2">

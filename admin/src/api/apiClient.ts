@@ -1,6 +1,3 @@
-import { onAuthStateChanged, type User } from 'firebase/auth';
-import { auth, isFirebaseConfigured } from '../config/firebase';
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
 const AUTH_TOKEN_KEY = 'admin_token';
 
@@ -14,40 +11,14 @@ const parseJson = async (response: Response) => {
   return text ? JSON.parse(text) : null;
 };
 
-const waitForFirebaseUser = async (timeoutMs = 1500): Promise<User | null> => {
-  if (!isFirebaseConfigured || auth.currentUser) {
-    return auth.currentUser;
-  }
-
-  return await new Promise<User | null>((resolve) => {
-    const timer = window.setTimeout(() => {
-      unsubscribe();  
-      resolve(auth.currentUser);
-    }, timeoutMs);
-
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      window.clearTimeout(timer);
-      unsubscribe();
-      resolve(user);
-    });
-  });
-};
 
 const getBearerToken = async (): Promise<string | null> => {
   const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
 
-  if (!isFirebaseConfigured) {
-    return storedToken;
-  }
-
-  const firebaseUser = auth.currentUser || (await waitForFirebaseUser());
-  if (!firebaseUser) {
-    return storedToken;
-  }
-
-  const freshToken = await firebaseUser.getIdToken();
-  localStorage.setItem(AUTH_TOKEN_KEY, freshToken);
-  return freshToken;
+  // Always use the stored backend JWT — never replace it with a raw Firebase token.
+  // The backend JWT is set by loginWithFirebase after the /auth/verify exchange.
+  // Sending a raw Firebase ID token to the gateway would fail JWT_SECRET verification.
+  return storedToken;
 };
 
 // Guard against multiple simultaneous 401 redirects
