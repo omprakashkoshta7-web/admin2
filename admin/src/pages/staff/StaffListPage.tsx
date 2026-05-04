@@ -14,7 +14,6 @@ import {
   deleteAdminStaff, 
   updateAdminStaffStatus,
   updateAdminStaffRole,
-  deleteAdminProfile
 } from "../../api/admin";
 import type { AdminStaffResponse } from "../../api/admin";
 
@@ -207,7 +206,7 @@ export default function StaffListPage() {
     if (!confirm('Are you sure you want to delete this staff member?')) return;
     try {
       setLoading(true);
-      await deleteAdminProfile(id);
+      await deleteAdminStaff(id);
       setAddedStaffList(prev => prev.filter(s => s.id !== id));
       refetch();
       alert('Staff member deleted successfully');
